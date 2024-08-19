@@ -5,9 +5,10 @@
     <title>Slackloop QC tool</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
+        
         #map {
-            height: 95vh;
-           
+            height: 96vh;
+            
         }
         .highlight {
             color: red;
@@ -49,12 +50,12 @@
     <script>
         // Initialize the map with scroll wheel zoom enabled and enhanced zoom options
         var map = L.map('map', {
-            scrollWheelZoom: true, // Ensure scroll wheel zoom is enabled
+            maxBounds: L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180)), // Ensure scroll wheel zoom is enabled
             minZoom: 2, // Adjust the zoom delta to control how much zoom changes per scroll event
         }).setView([0, 0], 2); // Start with world view
 
         // Add a tile layer (basemap)
-       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '@ Develop by JGN',
             maxZoom: 99
         }).addTo(map);
@@ -66,10 +67,10 @@
 
         var geojsonData1 = null; // Data from the first GeoJSON
         var geojsonData2 = null; // Data from the second GeoJSON
-        var geojsonData3 = null; // Data from the third GeoJSON
+        //var geojsonData3 = null; // Data from the third GeoJSON
 
         var geojsonLayer1 = null; // Layer for the first GeoJSON
-        var geojsonLayer3 = null;
+        //var geojsonLayer3 = null;
 
         function processGeoJSON(fileInputId, callback) {
             var fileInput = document.getElementById(fileInputId);
@@ -104,129 +105,170 @@
         }
 
         function updateMapWithCounts() {
-            var coordCounts1 = {};
-            var coordCounts2 = {};
+    var coordCounts1 = {};
+    //var coordCounts2 = {};
+    //var length50Count = 0;
+    //var length25Count = 0;
 
-            // Count occurrences of each coordinate pair for the first GeoJSON
-            geojsonData1.features.forEach(function(feature) {
-                var coords = feature.geometry.coordinates.join(',');
-                coordCounts1[coords] = (coordCounts1[coords] || 0) + 1;
-            });
+    // Count occurrences of each coordinate pair for the first GeoJSON
+    geojsonData1.features.forEach(function(feature) {
+        var coords = feature.geometry.coordinates.join(',');
+        //var length = feature.properties.Length||'N/A';
+        coordCounts1[coords] = (coordCounts1[coords] || 0) + 1;
+        /*if (length === "50") length50Count++;
+        if (length === "25") length50Count++;*/
+    });
 
-            // Count occurrences of each coordinate pair for the second GeoJSON
-            geojsonData2.features.forEach(function(feature) {
-                var coords = feature.geometry.coordinates.join(',');
-                coordCounts2[coords] = (coordCounts2[coords] || 0) + 1;
-            });
+    // Count occurrences of each coordinate pair for the second GeoJSON
+    /*geojsonData2.features.forEach(function(feature) {
+        var coords = feature.geometry.coordinates.join(',');
+        coordCounts2[coords] = (coordCounts2[coords] || 0) + 1;
+    });*/
 
-            // Clear previous layer
-            if (geojsonLayer1) map.removeLayer(geojsonLayer1);
+    // Clear previous layer
+    if (geojsonLayer1) map.removeLayer(geojsonLayer1);
 
-            // Add the first GeoJSON layer to the map with counts
-            geojsonLayer1 = L.geoJSON(geojsonData1, {
-                pointToLayer: function (feature, latlng) {
-                    var countWithinRadius = 0;
-                    var coords = feature.geometry.coordinates.join(',');
+    // Add the first GeoJSON layer to the map with counts
+    geojsonLayer1 = L.geoJSON(geojsonData1, {
+    pointToLayer: function (feature, latlng) {
+        var countWithinRadius = 0;
+        var coords = feature.geometry.coordinates.join(',');
 
-                    // Count how many points from the second GeoJSON are within 30 feet
-                    geojsonData2.features.forEach(function(otherFeature) {
-                        var otherLatLng = L.latLng(otherFeature.geometry.coordinates[1], otherFeature.geometry.coordinates[0]);
-                        if (calculateDistance(latlng, otherLatLng) <= 9.144) { // 30 feet ≈ 9.144 meters radius
-                            countWithinRadius++;
-                        }
-                    });
+        // Determine the radius based on countSameCoords
+        var radius = (coordCounts1[coords] > 1) ? 9.144 : 4.572; // 30 feet ≈ 9.144 meters, 10 feet ≈ 3.048 meters
 
-                    var countSameCoords = coordCounts1[coords] || 0;
-
-                    // Determine marker color based on the count comparison
-                    var markerColor;
-
-                    if (hasDuplicate) {
-                        markerColor =  "orange",
-                        surroundColor = "orange";
-                    }else if (countWithinRadius > countSameCoords) {
-                        markerColor = "yellow",
-                        surroundColor = "f1ee8e"; // Yellow
-                    } else if (countWithinRadius === countSameCoords) {
-                        markerColor = "#a3f307",
-                        surroundColor = "green"; // Fluorescent green
-                    } else {
-                        markerColor = "red",
-                        surroundColor = "red"; // Red
-                    }
-
-                    var marker = L.circleMarker(latlng, {
-                        radius: 8,
-                        fillColor: markerColor,
-                        color: surroundColor,
-                        weight: 1,
-                        opacity: 1,
-                        fillOpacity: 0.8,
-                        //zIndex:1
-                    });
-
-                    // Collect properties from the second GeoJSON features within 30 feet
-                    var popupContent = "Inserted slack count: " + (countWithinRadius > countSameCoords ? "<span class='highlight'>" + countWithinRadius + "</span>" : countWithinRadius) + "<br>Original slack count: " + countSameCoords + "<br>";
-
-                    var parentVetroIdCounts = {}; // Track parent_vetro_id counts within this popup
-                    var hasDuplicate = false; // Flag to determine if any parent_vetro_id is duplicated
-                    geojsonData2.features.forEach(function(otherFeature) {
-                        var otherLatLng = L.latLng(otherFeature.geometry.coordinates[1], otherFeature.geometry.coordinates[0]);
-                        if (calculateDistance(latlng, otherLatLng) <= 9.144) { // 30 feet ≈ 9.144 meters radius
-                            var parentVetroId = otherFeature.properties.parent_vetro_id || 'N/A';
-                            var vetroId = otherFeature.properties.vetro_id || 'N/A';
-                            
-                            if (!parentVetroIdCounts[parentVetroId]) {
-                                parentVetroIdCounts[parentVetroId] = 0;
-                            }
-                            parentVetroIdCounts[parentVetroId]++;
-                           
-
-                        
-                            
-                            if (parentVetroIdCounts[parentVetroId] > 1) {
-                                hasDuplicate = true;
-                            }
-
-                            var coordinatesLink = "https://app.vetro.io/fibermap/map#25/" + otherFeature.geometry.coordinates[1] + "/" + otherFeature.geometry.coordinates[0];
-                            var linkClass = (parentVetroIdCounts[parentVetroId] > 1) ? "highlight" : "";
-
-                            // Highlight Coordinates based on the duplicate condition
-                            var coordinatesStyle = parentVetroIdCounts[parentVetroId] > 1 ? "<span class='highlight'>" : "";
-                            var coordinatesEndStyle = parentVetroIdCounts[parentVetroId] > 1 ? "</span>" : "";
-
-                            popupContent += "<br>parent_vetro_id: " + (parentVetroIdCounts[parentVetroId] > 1 ? "<span class='highlight'>" + parentVetroId + "</span>" : parentVetroId);
-                            //popupContent += "<br>vetro_id: " + (parentVetroIdCounts[parentVetroId] > 1 ? "<span class='highlight'>" + vetroId + "</span>":vetroId);
-                            popupContent += "<br>Coordinates: " + coordinatesStyle + "[" + otherFeature.geometry.coordinates.join(', ') + "]" + coordinatesEndStyle;
-                            popupContent += "<br><a class='" + linkClass + "' href='" + coordinatesLink + "' target='_blank'>View Location</a>" + "<br>";
-                        }
-                    });
-
-                    // Change marker color to blue if duplicates are found
-                    if (hasDuplicate&&countWithinRadius > countSameCoords) {
-                        marker.setStyle({
-                            fillColor: "yellow", // Blue
-                            color: "yellow"
-                        });
-                    }
-                    else if (hasDuplicate) {
-                        marker.setStyle({
-                            fillColor: "blue", // Blue
-                            color: "blue"
-                        });
-                    }
-
-                    marker.bindPopup("<div class='custom-popup'>" + popupContent + "</div>");
-                    return marker;
-                }
-            }).addTo(map);
-
-            // Fit map bounds to include only the points from the first GeoJSON
-            if (geojsonData1.features.length > 0) {
-                var bounds = L.featureGroup([geojsonLayer1]).getBounds();
-                map.fitBounds(bounds);
+        // Count how many points from the second GeoJSON are within the specified radius
+        geojsonData2.features.forEach(function(otherFeature) {
+            var otherLatLng = L.latLng(otherFeature.geometry.coordinates[1], otherFeature.geometry.coordinates[0]);
+            if (calculateDistance(latlng, otherLatLng) <= radius) {
+                countWithinRadius++;
             }
+        });
+
+        var countSameCoords = coordCounts1[coords] || 0;
+
+        // Determine marker color based on the count comparison
+        var markerColor;
+        var outlineColor = "blue";
+
+        if (countWithinRadius > countSameCoords) {
+            markerColor = "yellow"; // Yellow
+        } else if (countWithinRadius === countSameCoords) {
+            markerColor = "#a3f307"; // Fluorescent green
+        } else {
+            markerColor = "red"; // Red
         }
+
+        var marker = L.circleMarker(latlng, {
+            radius: 8,
+            fillColor: markerColor,
+            color: outlineColor,
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+        });
+
+        // Collect properties from the second GeoJSON features within the specified radius
+        var popupContent = "Inserted slack count: " + (countWithinRadius > countSameCoords ? "<span class='highlight'>" + countWithinRadius + "</span>" : countWithinRadius);
+        popupContent += "<br>Original slack count: " + countSameCoords + "<br>";
+
+        var length25Count = 0;
+        var length50Count = 0;
+        var totalLength25Count = 0;
+        var totalLength50Count = 0;
+
+        if (countSameCoords >= 2) {
+            var lengths = [];
+            geojsonData1.features.forEach(function(f) {
+                var fCoords = f.geometry.coordinates.join(',');
+                if (fCoords === coords) {
+                    var length = f.properties.Length || 'N/A';
+                    if (length === 25) length25Count++;
+                    if (length === 50) length50Count++;
+                }
+            });
+        } else {
+            var length = feature.properties.Length || 'N/A';
+            if (length === 25) length25Count++;
+            if (length === 50) length50Count++;
+        }
+
+        var parentVetroIdCounts = {};
+        var hasDuplicate = false;
+
+        geojsonData2.features.forEach(function(otherFeature) {
+            var otherLatLng = L.latLng(otherFeature.geometry.coordinates[1], otherFeature.geometry.coordinates[0]);
+            if (calculateDistance(latlng, otherLatLng) <= radius) {
+                var parentVetroId = otherFeature.properties.parent_vetro_id || 'N/A';
+                var length2 = otherFeature.properties.Length || 'N/A';
+
+                if (length2 === 25) totalLength25Count++;
+                if (length2 === 50) totalLength50Count++;
+
+                if (!parentVetroIdCounts[parentVetroId]) {
+                    parentVetroIdCounts[parentVetroId] = 0;
+                }
+                parentVetroIdCounts[parentVetroId]++;
+
+                if (parentVetroIdCounts[parentVetroId] > 1) {
+                    hasDuplicate = true;
+                }
+
+                if (totalLength25Count > length25Count) {
+                    hasmore25 = true;
+                }
+                if (totalLength50Count > length50Count) {
+                    hasmore50 = true;
+                }
+
+                var coordinatesLink = "https://app.vetro.io/fibermap/map#25/" + otherFeature.geometry.coordinates[1] + "/" + otherFeature.geometry.coordinates[0];
+                var linkClass = (parentVetroIdCounts[parentVetroId] > 1) ? "highlight" : "";
+
+                var coordinatesStyle = parentVetroIdCounts[parentVetroId] > 1 ? "<span class='highlight'>" : "";
+                var coordinatesEndStyle = parentVetroIdCounts[parentVetroId] > 1 ? "</span>" : "";
+
+                popupContent += "<br>parent_vetro_id: " + (parentVetroIdCounts[parentVetroId] > 1 ? "<span class='highlight'>" + parentVetroId + "</span>" : parentVetroId);
+                popupContent += "<br>Length: " + length2;
+                popupContent += "<br>Coordinates: " + coordinatesStyle + "[" + otherFeature.geometry.coordinates.join(', ') + "]" + coordinatesEndStyle;
+                popupContent += "<br><a class='" + linkClass + "' href='" + coordinatesLink + "' target='_blank'>View Location</a><br>";
+            }
+        });
+
+        popupContent += "<br><strong>Total Inserted Length 25:</strong> " + (totalLength25Count > length25Count ? "<span class='highlight'>" + totalLength25Count + "</span>" : totalLength25Count);
+        popupContent += "<br>Total Original Length 25: " + length25Count + "<br>";
+        popupContent += "<br><strong>Total Inserted Length 50:</strong> " + (totalLength50Count > length50Count ? "<span class='highlight'>" + totalLength50Count + "</span>" : totalLength50Count);
+        popupContent += "<br>Total Original Length 50: " + length50Count;
+
+        if (hasDuplicate) {
+            marker.setStyle({
+                fillColor: "blue", // Blue
+                color: outlineColor
+            });
+        } else if (length25Count === totalLength25Count && length50Count === totalLength50Count && countWithinRadius === countSameCoords) {
+            marker.setStyle({
+                fillColor: "#a3f307", // Purple
+                color: outlineColor
+            });
+        } else if ((totalLength25Count > length25Count || totalLength50Count > length50Count) && countWithinRadius === countSameCoords) {
+            marker.setStyle({
+                fillColor: "yellow", // yellow
+                color: outlineColor
+            });
+        }
+
+        marker.bindPopup("<div class='custom-popup'>" + popupContent + "</div>");
+        return marker;
+    }
+}).addTo(map);
+
+
+    // Fit map bounds to include only the points from the first GeoJSON
+    if (geojsonData1.features.length > 0) {
+        var bounds = L.featureGroup([geojsonLayer1]).getBounds();
+        map.fitBounds(bounds);
+    }
+}
+
 
         function showThirdGeoJSON() {
             if (geojsonLayer3) map.removeLayer(geojsonLayer3);
@@ -253,10 +295,9 @@
         legend.onAdd = function(map) {
             var div = L.DomUtil.create('div', 'legend');
             div.innerHTML += '<i class="circle" style="background: #a3f307"></i> Slackloop Pass<p>';
-            div.innerHTML += '<i class="circle" style="background: yellow"></i>Over inserted Slackloop<p>';
+            div.innerHTML += '<i class="circle" style="background: yellow"></i>Incorrect Slackloop Length<p>';
             div.innerHTML += '<i class="circle" style="background: red"></i> Missing Slackloop<p>';
             div.innerHTML += '<i class="circle" style="background: blue"></i> Duplicate Slackloop';
-            //div.innerHTML += '<i class="circle" style="background: red"></i> Missing Slackloop<p>';
             return div;
         };
 
