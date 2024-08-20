@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoJSON File Upload and Display</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 94vh;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .leaflet-popup-content {
+            display: flex;
+            max-height: 300px;
+            overflow: auto;
+        }
+        .leaflet-popup-content-wrapper {
+            white-space: nowrap; /* Prevent line breaks */
+            width: auto; /* Let the content dictate the width */ 
+            overflow-x: auto;          
+        }
+
+        .popup-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .page-content {
+            flex: 1;
+            overflow: auto;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .page-header {
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .page-body {
+            padding: 10px;
+            font-size: 14px;
+        }
+        .page-body p {
+            white-space: nowrap; /* Prevent line breaks */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add '...' if the text overflows */
+        }
+
+        .nav-buttons {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background-color: #f4f4f4;
+            box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
+        }
+        .nav-buttons button {
+            margin: 2px 0;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .nav-buttons button.active {
+            background-color: #ddd;
+            border-color: #ccc;
+            font-weight: bold;
+        }
+        .leaflet-tooltip {
+            background-color: #1b52e9;
+            border: 1px solid #e00101;
+            color: #333333;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <label>Upload Handhole File</label>
+    <input type="file" id="geojsonInput1" accept=".geojson,application/json">
+    <label>Upload Splicing File</label>
+    <input type="file" id="geojsonInput2" accept=".geojson,application/json">
+    <label>Upload Fiber</label>
+    <input type="file" id="geojsonInput3" accept=".geojson,application/json">
+    <a href="/Slcktool.html">Slackloop tool</a>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map', {
+            maxBounds: L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180)),
+            minZoom: 2
+        }).setView([0, 0], 2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '@ Develop by JGN',
+            maxZoom: 99
+        }).addTo(map);
+
+        let firstGeoJSONCoordinates = {};
+        let thirdGeoJSONFondid = [];
+
+        function handleGeoJSONUpload(inputElement, isFirst, isThird) {
+            const file = inputElement.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const geojson = JSON.parse(e.target.result);
+
+                        if (isFirst) {
+                            firstGeoJSONCoordinates = extractCoordinatesWithProperties(geojson);
+                        } else if (isThird) {
+
+                              
+                            // Directly add the third GeoJSON to the map without any filtering
+                            const geojsonLayer = L.geoJSON(geojson, {
+                                style: function(feature) {
+                                return {
+                                color: feature.properties.Layer === 'Fiber (Lateral)' ? 'red' : 'orange',
+                                weight: 4,
+                                opacity: 0.8
+                            }; 
+                        }
+                        
+                    }).addTo(map);
+
+                            
+                            if (geojson.features.length > 0) {
+                                map.fitBounds(L.geoJSON(geojson).getBounds(), {
+                                    padding: [20, 20],
+                                    maxZoom: 15
+                                });
+                            }
+                        } else {
+                            const filteredGeojson = filterGeoJSONByCoordinates(geojson, Object.keys(firstGeoJSONCoordinates));
+
+                            const geojsonLayer = L.geoJSON(filteredGeojson, {
+                                pointToLayer: function (feature, latlng) {
+                                    let markerOptions = {
+                                        radius: 8,
+                                        weight: 1,
+                                        opacity: 1,
+                                        fillOpacity: 0.8
+                                    };
+
+                                    const equipmentType = feature.properties.Equipment;
+                                    if (equipmentType === 'PS') {
+                                        markerOptions.fillColor = "green";
+                                        markerOptions.color = "green";
+                                    } else if (equipmentType === 'SS') {
+                                        markerOptions.fillColor = "red";
+                                        markerOptions.color = "red";
+                                    } else if (equipmentType === 'None') {
+                                        markerOptions.fillColor = "white";
+                                        markerOptions.color = "yellow";
+                                    }else if (equipmentType === 'Splice') {
+                                        markerOptions.fillColor = "blue";
+                                        markerOptions.color = "blue";
+                                    }else if (equipmentType === 'PS & SS') {
+                                        markerOptions.fillColor = "purple";
+                                        markerOptions.color = "purple";
+                                    }
+
+                                    let marker = L.circleMarker(latlng, markerOptions);
+
+                                    const popupContent = generatePopupContent(feature, firstGeoJSONCoordinates[latlng.toString()]);
+                                    marker.bindPopup(popupContent);
+                                    return marker;
+                                }
+                            }).addTo(map);
+
+                            if (filteredGeojson.features.length > 0) {
+                                map.fitBounds(L.geoJSON(filteredGeojson).getBounds(), {
+                                    padding: [20, 20],
+                                    maxZoom: 15
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        alert('Invalid GeoJSON file.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function extractCoordinatesWithProperties(geojson) {
+            const coordinates = {};
+            L.geoJSON(geojson, {
+                onEachFeature: function (feature, layer) {
+                    if (feature.geometry.type === "Point") {
+                        coordinates[layer.getLatLng().toString()] = feature.properties;
+                    }
+                }
+            });
+            return coordinates;
+        }
+
+        function filterGeoJSONByCoordinates(geojson, coordinatesToMatch) {
+            return {
+                ...geojson,
+                features: geojson.features.filter(feature => {
+                    if (feature.geometry.type === "Point") {
+                        const latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).toString();
+                        return coordinatesToMatch.includes(latlng);
+                    }
+                    return false;
+                })
+            };
+        }
+
+        function generatePopupContent(feature, firstGeoJsonProperties) {
+            const properties = feature.properties;
+            const propertiesSS = feature.properties.vetro_id;
+            const Handhole = feature.properties.ID;
+            const equipmentType = feature.properties.Equipment;
+            const hubName = firstGeoJsonProperties.hubName ? firstGeoJsonProperties.hubName : "";
+            const connections = firstGeoJsonProperties.connections ? firstGeoJsonProperties.connections.split(', ').map(part => part.trim()).join('<br>')  : "";
+            const hubb = firstGeoJsonProperties.hubb ? firstGeoJsonProperties.hubb : "";
+            const conn = firstGeoJsonProperties.conn ? firstGeoJsonProperties.conn.split(', ').map(part => part.trim()).join('<br>')  : "";
+            const hubbb = firstGeoJsonProperties.hubbb ? firstGeoJsonProperties.hubbb : "";
+            const connn = firstGeoJsonProperties.connn ? firstGeoJsonProperties.connections.split(', ').map(part => part.trim()).join('<br>')  : "";
+
+            let page1Content = '';
+            let page2Content = '';
+            let page3Content = '';
+
+            if (equipmentType === 'None') {
+                page1Content = '';
+                page2Content = '';
+                page3Content = '';
+            } else {
+                page1Content = `<div class="page-header">${Handhole}</div>
+                                <div class="page-body">                                  
+                                    <p><strong>Hub:${hubName}</strong></p>
+                                    <p><strong>Splicing:</strong><br>${connections}</br></p>
+                                </div>`;
+                page2Content = `<div class="page-header">${Handhole}</div>
+                                <div class="page-body">
+                                   <p><strong>Hub:${hubb}</strong></p>
+                                    <p><strong>Splicing:</strong><br>${conn}</br></p>
+                                </div>`;
+                page3Content = `<div class="page-header">${Handhole}</div>
+                                <div class="page-body">
+                                    <p><strong>Hub:${hubbb}</strong></p>
+                                    <p><strong>Splicing:</strong><br>${connn}</br></p>
+                                </div>`;
+            }
+
+            const content = `
+                <div class="popup-container">
+                    <div class="page-content">
+                        <div id="page1" class="page active">
+                            ${page1Content}
+                        </div>
+                        <div id="page2" class="page">
+                            ${page2Content}
+                        </div>
+                        <div id="page3" class="page">
+                            ${page3Content}
+                        </div>
+                    </div>
+                    <div class="nav-buttons">
+                        <button data-page="page1">1</button>
+                        <button data-page="page2">2</button>
+                        <button data-page="page3">3</button>
+                    </div>
+                </div>
+            `;
+
+            return content;
+        }
+
+        function attachPopupNavigation() {
+            document.addEventListener('click', function(event) {
+                if (event.target.matches('.nav-buttons button')) {
+                    const pageId = event.target.getAttribute('data-page');
+                    showPage(pageId);
+                }
+            });
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.toggle('active', page.id === pageId);
+            });
+            document.querySelectorAll('.nav-buttons button').forEach(button => {
+                button.classList.toggle('active', button.getAttribute('data-page') === pageId);
+            });
+        }
+
+        document.getElementById('geojsonInput1').addEventListener('change', function() {
+            handleGeoJSONUpload(this, true, false);
+        });
+
+        document.getElementById('geojsonInput2').addEventListener('change', function() {
+            handleGeoJSONUpload(this, false, false);
+        });
+
+        document.getElementById('geojsonInput3').addEventListener('change', function() {
+            handleGeoJSONUpload(this, false, true);
+        });
+
+        map.on('popupopen', function() {
+            attachPopupNavigation();
+        });
+    </script>
+</body>
+</html>
