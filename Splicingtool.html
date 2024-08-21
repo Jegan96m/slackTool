@@ -79,12 +79,11 @@
             font-weight: bold;
         }
         .leaflet-tooltip {
-            background-color: #1b52e9;
-            border: 1px solid #e00101;
+           
             color: #333333;
             font-size: 12px;
-            padding: 2px 6px;
-            border-radius: 3px;
+           
+           
         }
     </style>
 </head>
@@ -134,9 +133,19 @@
                                 weight: 4,
                                 opacity: 0.8
                             }; 
-                        }
-                        
-                    }).addTo(map);
+                        },
+                            onEachFeature: function(feature, layer) {
+                                // Add a permanent label displaying the fondid below the line
+                                if (feature.properties.FondID) {
+                                    layer.bindTooltip(`Fondid: ${feature.properties.FondID}`, {
+                                        permanent: true,
+                                        direction: 'bottom',
+                                        offset: [0, 10],  // Adjust offset to ensure visibility below the line
+                                        className: 'leaflet-tooltip'
+                                    }).openTooltip();
+                                }
+                            }
+                        }).addTo(map);
 
                             
                             if (geojson.features.length > 0) {
