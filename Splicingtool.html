@@ -125,27 +125,40 @@
                         } else if (isThird) {
 
                               
-                            // Directly add the third GeoJSON to the map without any filtering
-                            const geojsonLayer = L.geoJSON(geojson, {
-                                style: function(feature) {
-                                return {
-                                color: feature.properties.Layer === 'Fiber (Lateral)' ? 'red' : 'orange',
-                                weight: 4,
-                                opacity: 0.8
-                            }; 
-                        },
-                            onEachFeature: function(feature, layer) {
-                                // Add a permanent label displaying the fondid below the line
-                                if (feature.properties.FondID) {
-                                    layer.bindTooltip(`Fondid: ${feature.properties.FondID}`, {
-                                        permanent: true,
-                                        direction: 'bottom',
-                                        offset: [0, 10],  // Adjust offset to ensure visibility below the line
-                                        className: 'leaflet-tooltip'
-                                    }).openTooltip();
-                                }
-                            }
-                        }).addTo(map);
+                             // Directly add the third GeoJSON to the map without any filtering
+                                const geojsonLayer = L.geoJSON(geojson, {
+                                    style: function(feature) {
+                                        let color;
+                                        let weight;
+                                        if (feature.properties.Layer === 'Fiber (Lateral)') {
+                                            color = 'red';
+                                            weight = 4;
+                                        } else if (feature.properties.Layer === 'Fiber (Distribution)') {
+                                            color = 'orange';
+                                            weight = 4;
+                                        } else {
+                                            color = 'purple';
+                                            weight = 2;
+                                        }
+        
+                                        return {
+                                            color: color,
+                                            weight: weight,
+                                            opacity: 0.8
+                                        };
+                                    },
+                                    onEachFeature: function(feature, layer) {
+                                        // Add a permanent label displaying the fondid below the line
+                                        if (feature.properties.FondID) {
+                                            layer.bindTooltip(`ID: ${feature.properties.ID}<br>FondID: ${feature.properties.FondID}`, {
+                                                permanent: true,
+                                                direction: 'bottom',
+                                                offset: [0, 10],  // Adjust offset to ensure visibility below the line
+                                                className: 'leaflet-tooltip'
+                                            }).openTooltip();
+                                        }
+                                    }
+                                }).addTo(map);
 
                             
                             if (geojson.features.length > 0) {
