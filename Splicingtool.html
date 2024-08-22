@@ -264,7 +264,7 @@
                                 if (layersAtPoint.length > 1) {
                                     let popupContent = '<strong>Cables:</strong><p>';
                                     layersAtPoint.forEach((layer, index) => {
-                                        popupContent += `<a href="#" data-layer-index="${index}">${layer.feature.properties.ID}- ${layer.feature.properties.Layer}</a></br>`;
+                                        popupContent += `<a href="#" data-layer-index="${index}">${layer.feature.properties.ID}- ${layer.feature.properties.FondID}</a></br>`;
                                     });
                                     popupContent += '</ul>';
                                     layer.bindPopup(popupContent).openPopup();
