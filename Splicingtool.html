@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Splicing Tool</title>
+    <title>GeoJSON File Upload and Display</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <style>
            #map {
@@ -147,7 +147,7 @@
     <input type="file" id="geojsonInput2" accept=".geojson,application/json">
     <label>Upload Fiber</label>
     <input type="file" id="geojsonInput3" accept=".geojson,application/json">
-    <a href="index.html">Slackloop tool</a>
+    <a href="/Slcktool.html">Slackloop tool</a>
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
@@ -262,9 +262,9 @@
                                 });
 
                                 if (layersAtPoint.length > 1) {
-                                    let popupContent = '<strong>Select a Layer:</strong><p>';
+                                    let popupContent = '<strong>Cables:</strong><p>';
                                     layersAtPoint.forEach((layer, index) => {
-                                        popupContent += `<a href="#" data-layer-index="${index}">${layer.feature.properties.ID} - ${layer.feature.properties.Layer}</a></br>`;
+                                        popupContent += `<a href="#" data-layer-index="${index}">${layer.feature.properties.ID}</a></br>`;
                                     });
                                     popupContent += '</ul>';
                                     layer.bindPopup(popupContent).openPopup();
@@ -438,7 +438,7 @@
             let page2Content = '';
             let page3Content = '';
 
-            if (equipmentType === 'None') {
+            if (equipmentType === 'Other') {
                 page1Content = '';
                 page2Content = '';
                 page3Content = '';
