@@ -262,9 +262,9 @@
                                 });
 
                                 if (layersAtPoint.length > 1) {
-                                    let popupContent = '<strong>Select a Layer:</strong><ul>';
+                                    let popupContent = '<strong>Select a Layer:</strong><p>';
                                     layersAtPoint.forEach((layer, index) => {
-                                        popupContent += `<li><a href="#" data-layer-index="${index}">${layer.feature.properties.ID} - ${layer.feature.properties.Layer}</a></li>`;
+                                        popupContent += `<a href="#" data-layer-index="${index}">${layer.feature.properties.ID} - ${layer.feature.properties.Layer}</a></br>`;
                                     });
                                     popupContent += '</ul>';
                                     layer.bindPopup(popupContent).openPopup();
