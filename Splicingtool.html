@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Splicing tool</title>
+    <title>GeoJSON File Upload and Display</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <style>
-        #map {
+           #map {
             height: 94vh;
             width: 100%;
             margin-top: 20px;
         }
         .leaflet-popup-content {
             display: flex;
+            resize: horizontal;
             max-height: 300px;
             overflow: auto;
         }
@@ -79,18 +80,44 @@
             font-weight: bold;
         }
         .leaflet-tooltip {
-           
-            color: #333333;
+            color: black;
             font-size: 12px;
-           
+            background-color: lightgoldenrodyellow;/* Ensure background is transparent */  
+            
            
         }
+        .neon-marker-green {
+            box-shadow: 0 0 5px #39ff14, 
+                        0 0 10px #39ff14, 
+                        0 0 15px #39ff14, 
+                        0 0 20px #39ff14;
+        }
+        .neon-marker-red {
+            box-shadow: 0 0 5px #ff073a, 
+                        0 0 10px #ff073a, 
+                        0 0 15px #ff073a, 
+                        0 0 20px #ff073a;
+        }
+        .neon-marker-purple {
+            box-shadow: 0 0 5px #FF00FF, 
+                        0 0 10px #FF00FF, 
+                        0 0 15px #FF00FF, 
+                        0 0 20px #FF00FF;
+        }
+        .neon-marker-purple {
+            box-shadow: 0 0 5px #0000FF, 
+                        0 0 10px #0000FF, 
+                        0 0 15px #0000FF, 
+                        0 0 20px #0000FF;
+        }
+
+
     </style>
 </head>
 <body>
-    <label>Upload Splicing File</label>
-    <input type="file" id="geojsonInput1" accept=".geojson,application/json">
     <label>Upload Handhole File</label>
+    <input type="file" id="geojsonInput1" accept=".geojson,application/json">
+    <label>Upload Splicing File</label>
     <input type="file" id="geojsonInput2" accept=".geojson,application/json">
     <label>Upload Fiber</label>
     <input type="file" id="geojsonInput3" accept=".geojson,application/json">
@@ -104,121 +131,240 @@
             minZoom: 2
         }).setView([0, 0], 2);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '@ Develop by JGN',
+        // Define base layers
+        var lightTheme = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© Develop by JGN',
             maxZoom: 99
-        }).addTo(map);
+        });
+
+        var darkTheme = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '@ Develop by JGN.',
+            maxZoom: 99
+        });
+
+        // Add initial layer
+        darkTheme.addTo(map);
+
+        var baseLayers = {
+            "Light Theme": lightTheme,
+            "Dark Theme": darkTheme
+        };
+
+        var overlayLayers = {};
+
+        var layerControl = L.control.layers(baseLayers, overlayLayers, { position: 'topright' }).addTo(map);
+
 
         let firstGeoJSONCoordinates = {};
         let thirdGeoJSONFondid = [];
+       
 
         function handleGeoJSONUpload(inputElement, isFirst, isThird) {
-            const file = inputElement.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const geojson = JSON.parse(e.target.result);
+        const file = inputElement.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const geojson = JSON.parse(e.target.result);
 
-                        if (isFirst) {
-                            firstGeoJSONCoordinates = extractCoordinatesWithProperties(geojson);
-                        } else if (isThird) {
-
-                              
-                             // Directly add the third GeoJSON to the map without any filtering
-                                const geojsonLayer = L.geoJSON(geojson, {
-                                    style: function(feature) {
-                                        let color;
-                                        let weight;
-                                        if (feature.properties.Layer === 'Fiber (Lateral)') {
-                                            color = 'red';
-                                            weight = 4;
-                                        } else if (feature.properties.Layer === 'Fiber (Distribution)') {
-                                            color = 'orange';
-                                            weight = 4;
-                                        } else {
-                                            color = 'purple';
-                                            weight = 1;
-                                        }
-        
-                                        return {
-                                            color: color,
-                                            weight: weight,
-                                            opacity: 0.8
-                                        };
-                                    },
-                                    onEachFeature: function(feature, layer) {
-                                        // Add a permanent label displaying the fondid below the line
-                                        if (feature.properties.FondID) {
-                                            layer.bindTooltip(`ID: ${feature.properties.ID}<br>FondID: ${feature.properties.FondID}`, {
-                                                permanent: true,
-                                                direction: 'bottom',
-                                                offset: [0, 10],  // Adjust offset to ensure visibility below the line
-                                                className: 'leaflet-tooltip'
-                                            }).openTooltip();
-                                        }
-                                    }
-                                }).addTo(map);
-
-                            
-                            if (geojson.features.length > 0) {
-                                map.fitBounds(L.geoJSON(geojson).getBounds(), {
-                                    padding: [20, 20],
-                                    maxZoom: 15
-                                });
-                            }
-                        } else {
-                            const filteredGeojson = filterGeoJSONByCoordinates(geojson, Object.keys(firstGeoJSONCoordinates));
-
-                            const geojsonLayer = L.geoJSON(filteredGeojson, {
-                                pointToLayer: function (feature, latlng) {
-                                    let markerOptions = {
-                                        radius: 8,
-                                        weight: 1,
-                                        opacity: 1,
-                                        fillOpacity: 0.8
-                                    };
-
-                                    const equipmentType = feature.properties.Equipment;
-                                    if (equipmentType === 'PS') {
-                                        markerOptions.fillColor = "green";
-                                        markerOptions.color = "green";
-                                    } else if (equipmentType === 'SS') {
-                                        markerOptions.fillColor = "red";
-                                        markerOptions.color = "red";
-                                    } else if (equipmentType === 'None') {
-                                        markerOptions.fillColor = "white";
-                                        markerOptions.color = "yellow";
-                                    }else if (equipmentType === 'Splice') {
-                                        markerOptions.fillColor = "blue";
-                                        markerOptions.color = "blue";
-                                    }else if (equipmentType === 'PS & SS') {
-                                        markerOptions.fillColor = "purple";
-                                        markerOptions.color = "purple";
-                                    }
-
-                                    let marker = L.circleMarker(latlng, markerOptions);
-
-                                    const popupContent = generatePopupContent(feature, firstGeoJSONCoordinates[latlng.toString()]);
-                                    marker.bindPopup(popupContent);
-                                    return marker;
+                    if (isFirst) {
+                        firstGeoJSONCoordinates = extractCoordinatesWithProperties(geojson);
+                    } else if (isThird) {
+                        // Directly add the third GeoJSON to the map without any filtering
+                        const geojsonLayer = L.geoJSON(geojson, {
+                            style: function(feature) {
+                                let color;
+                                let opacity;
+                                let weight;
+                                if (feature.properties.Layer === 'Fiber (Lateral)') {
+                                    color = 'red';
+                                    weight = 6;
+                                } else if (feature.properties.Layer === 'Fiber (Distribution)') {
+                                    color = 'orange';
+                                    weight = 6;
+                                } else {
+                                    color = '#CC00FF';
+                                    weight = 2;
                                 }
-                            }).addTo(map);
 
-                            if (filteredGeojson.features.length > 0) {
-                                map.fitBounds(L.geoJSON(filteredGeojson).getBounds(), {
-                                    padding: [20, 20],
-                                    maxZoom: 15
+                                return {
+                                    color: color,
+                                    weight: weight,
+                                    opacity: 0.8
+                                };
+                            },
+                            onEachFeature: function(feature, layer) {
+                                // Add a permanent label displaying the fondid below the line
+                                if (feature.properties.FondID) {
+                                    layer.bindTooltip(`ID: ${feature.properties.ID}, FondID: ${feature.properties.FondID}`, {
+                                        permanent: true,
+                                        direction: 'bottom',
+                                        offset: [0, 10],  // Adjust offset to ensure visibility below the line
+                                        className: 'leaflet-tooltip'
+                                    }).openTooltip();
+                                }
+                               // Change color on mouseover
+                                layer.on('mouseover', function() {
+                                    layer.setStyle({
+                                        color: 'yellow'
+                                    });
                                 });
+
+                                // Reset color on mouseout
+                                layer.on('mouseout', function() {
+                                    // Reset to original color based on properties
+                                    let resetColor;
+                                    if (feature.properties.Layer === 'Fiber (Lateral)') {
+                                        resetColor = 'red';
+                                    } else if (feature.properties.Layer === 'Fiber (Distribution)') {
+                                        resetColor = 'orange';
+                                    } else {
+                                        resetColor = '#CC00FF';
+                                    }
+
+                                    layer.setStyle({
+                                        color: resetColor
+                                    });
+                                });
+                             // Bind popup with some content (customize as needed)
+                             layer.on('click', function(e) {
+                                const layersAtPoint = [];
+                                map.eachLayer(function(layer) {
+                                    if (layer.feature && layer.getBounds && layer.getBounds().contains(e.latlng)) {
+                                        layersAtPoint.push(layer);
+                                    }
+                                });
+
+                                if (layersAtPoint.length > 1) {
+                                    let popupContent = '<strong>Select a Layer:</strong><ul>';
+                                    layersAtPoint.forEach((layer, index) => {
+                                        popupContent += `<li><a href="#" data-layer-index="${index}">${layer.feature.properties.ID} - ${layer.feature.properties.Layer}</a></li>`;
+                                    });
+                                    popupContent += '</ul>';
+                                    layer.bindPopup(popupContent).openPopup();
+
+                                    document.querySelectorAll('.leaflet-popup-content a').forEach(function(el) {
+                                        el.addEventListener('click', function() {
+                                            const selectedIndex = this.getAttribute('data-layer-index');
+                                            const selectedLayer = layersAtPoint[selectedIndex];
+
+                                            // Reset the previously highlighted layer if any
+                                            if (highlightedLayer) {
+                                                const previousColor = getOriginalColor(highlightedLayer.feature.properties);
+                                                highlightedLayer.setStyle({ color: previousColor });
+                                            }
+
+                                            // Highlight the selected layer
+                                            selectedLayer.setStyle({ color: 'yellow' });
+                                            highlightedLayer = selectedLayer; // Track the highlighted layer
+
+                                            // Update the popup content with the selected layer's properties
+                                            const selectedProps = selectedLayer.feature.properties;
+                                            const selectedContent = `
+                                                <strong>ID:</strong> ${selectedProps.ID}<br>
+                                                <strong>FondID:</strong> ${selectedProps.FondID}<br>
+                                                <strong>Layer:</strong> ${selectedProps.Layer}
+                                            `;
+                                            layer.setPopupContent(selectedContent);
+                                        });
+                                    });
+                                } else {
+                                    layer.openPopup();
+                                }
+                            });
+
+                            layer.bindPopup(`
+                                <div>
+                                    <strong>ID:</strong> ${feature.properties.ID}<br>
+                                    <strong>FondID:</strong> ${feature.properties.FondID}<br>
+                                    <strong>Layer:</strong> ${feature.properties.Layer}
+                                </div>
+                            `);
+                        }
+                    }).addTo(map);
+
+                        // Adjust the map view to fit the bounds of the third GeoJSON
+                        if (geojson.features.length > 0) {
+                            map.fitBounds(L.geoJSON(geojson).getBounds(), {
+                                padding: [20, 20],
+                                maxZoom: 15
+                            });
+                        }
+                        function getOriginalColor(properties) {
+                            if (properties.Layer === 'Fiber (Lateral)') {
+                                return 'red';
+                            } else if (properties.Layer === 'Fiber (Distribution)') {
+                                return 'orange';
+                            } else {
+                                return '#CC00FF';
                             }
                         }
-                    } catch (error) {
-                        alert('Invalid GeoJSON file.');
+                    } else {
+                        const filteredGeojson = filterGeoJSONByCoordinates(geojson, Object.keys(firstGeoJSONCoordinates));
+
+                        const geojsonLayer = L.geoJSON(filteredGeojson, {
+                            pointToLayer: function (feature, latlng) {
+                                let markerOptions = {
+                                    radius: 8,
+                                    weight: 1.5,
+                                    fillOpacity:0.8,
+                                    opacity: 1,
+                                    
+                                };
+
+                                const equipmentType = feature.properties.Equipment;
+                                if (equipmentType === 'PS') {
+                                    markerOptions.fillColor = "#39ff14";
+                                    markerOptions.color = "#39ff14";
+                                    markerOptions.className = "neon-marker-green"
+                                } else if (equipmentType === 'SS') {
+                                    markerOptions.fillColor = "#ff073a";
+                                    markerOptions.color = "#ff073a";
+                                    markerOptions.className = "neon-marker-red"
+                                } else if (equipmentType === 'None') {
+                                    markerOptions.fillColor = "white";
+                                    markerOptions.fillOpacity = "0.1";
+                                    markerOptions.color = "yellow";
+                                    markerOptions.opacity = "0.5";
+                                } else if (equipmentType === 'Splice') {
+                                    markerOptions.fillColor = "#0CAFFF";
+                                    markerOptions.color = "#0000FF";
+                                    markerOptions.className = "neon-marker-blue"
+                                } else if (equipmentType === 'PS & SS') {
+                                    markerOptions.fillColor = "#EE82EE";
+                                    markerOptions.color = "#FF00FF";
+                                    markerOptions.className = "neon-marker-purple"
+                                }
+
+                                let marker = L.circleMarker(latlng, markerOptions);
+                                 // Add tooltip to the marker
+                                 marker.bindTooltip(`ID: ${feature.properties.ID}`, {
+                                        className: 'leaflet-tooltip'
+                                    });
+
+                                const popupContent = generatePopupContent(feature, firstGeoJSONCoordinates[latlng.toString()]);
+                                marker.bindPopup(popupContent);
+                                
+                                return marker;
+                            }
+                        }).addTo(map);
+
+                        
+
+                        if (filteredGeojson.features.length > 0) {
+                            map.fitBounds(L.geoJSON(filteredGeojson).getBounds(), {
+                                padding: [20, 20],
+                                maxZoom: 15
+                            });
+                        }
                     }
-                };
-                reader.readAsText(file);
-            }
+                } catch (error) {
+                    alert('Invalid GeoJSON file.');
+                }
+            };
+            reader.readAsText(file);
         }
+    }
 
         function extractCoordinatesWithProperties(geojson) {
             const coordinates = {};
