@@ -424,7 +424,7 @@
 
         function generatePopupContent(feature, firstGeoJsonProperties) {
             const properties = feature.properties;
-            const propertiesSS = feature.properties.vetro_id;
+            const fondID = feature.properties.Spec || 'null';
             const Handhole = feature.properties.ID;
             const equipmentType = feature.properties.Equipment;
             const hubName = firstGeoJsonProperties.hubName ? firstGeoJsonProperties.hubName : "";
@@ -438,7 +438,7 @@
             let page2Content = '';
             let page3Content = '';
 
-            if (equipmentType === 'Other') {
+            if (fondID === "null") {
                 page1Content = '';
                 page2Content = '';
                 page3Content = '';
