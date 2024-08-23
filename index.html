@@ -287,6 +287,7 @@
 
             legend.onAdd = function(map) {
                 var div = L.DomUtil.create('div', 'legend');
+                div.innerHTML += '<strong><span style="font-size: 20px;">Legend</strong><p>';
                 div.innerHTML += '<i class="circle" style="background: #a3f307"></i> Slackloop Pass<p>';
                 div.innerHTML += '<i class="circle" style="background: yellow"></i>Incorrect Slackloop Length<p>';
                 div.innerHTML += '<i class="circle" style="background: red"></i> Missing Slackloop<p>';
