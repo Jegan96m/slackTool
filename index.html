@@ -283,6 +283,19 @@
             }
         }
 
+           var legend = L.control({ position: 'bottomright' });
+
+            legend.onAdd = function(map) {
+                var div = L.DomUtil.create('div', 'legend');
+                div.innerHTML += '<i class="circle" style="background: #a3f307"></i> Slackloop Pass<p>';
+                div.innerHTML += '<i class="circle" style="background: yellow"></i>Incorrect Slackloop Length<p>';
+                div.innerHTML += '<i class="circle" style="background: red"></i> Missing Slackloop<p>';
+                div.innerHTML += '<i class="circle" style="background: blue"></i> Duplicate Slackloop';
+                return div;
+            };
+    
+            legend.addTo(map);
+
         processGeoJSON('geojsonInput1');
         processGeoJSON('geojsonInput2');
         processGeoJSON('geojsonInput3');
