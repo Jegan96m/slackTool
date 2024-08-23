@@ -5,8 +5,29 @@
     <title>Slackloop QC tool</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        #map {
-            height: 96vh;
+          body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        #map{
+            padding: 0;
+            height: 100vh;
+        }
+
+        .fiberTable {
+            position: absolute;
+            border-collapse: collapse;
+            width: auto;
+            z-index: 998;
+            left: 5%;
+            top: 1%;
+            background-color: rgba(169, 169, 169, 0.7); /* Transparent gray background */
+
+        }
+
+        .fiberTable td {
+            padding: 10px;  
         }
         .highlight {
             color: red;
@@ -36,13 +57,25 @@
     </style>
 </head>
 <body>
-    <label for="geojsonInput1">Original Slackloop (geojson)</label>
-    <input type="file" id="geojsonInput1" accept=".geojson">
-    <label for="geojsonInput2">Plan Slackloop (geojson)</label>
-    <input type="file" id="geojsonInput2" accept=".geojson">
-    <label for="geojsonInput3">Upload Fibers(F1&F2)</label>
-    <input type="file" id="geojsonInput3" accept=".geojson" multiple>
-    <a href="Splicingtool.html">Splicing tool</a>
+    <table id="fiberTable" class="fiberTable">
+        <tr>
+            <td>
+                <label for="geojsonInput1">Original Slackloop (geojson)</label>
+                <input type="file" id="geojsonInput1" accept=".geojson">
+            </td>
+            <td>
+                <label for="geojsonInput2">Plan Slackloop (geojson)</label>
+                <input type="file" id="geojsonInput2" accept=".geojson">
+            </td>
+            <td>
+                <label for="geojsonInput3">Upload Fiber (geojson)</label>
+                <input type="file" id="geojsonInput3" accept=".geojson" multiple>
+            </td>
+            <td>
+                <a href="Splicingtool.html">Splicing tool</a>
+            </td>
+        </tr>
+    </table>
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -94,7 +127,7 @@
                                             var layerType = feature.properties.Layer || ''; // Adjust this path according to your GeoJSON structure
                                             return {
                                                 color: (layerType === 'Fiber (Lateral)') ? 'red' : 'orange',
-                                                weight: 4,
+                                                weight: 6,
                                                 opacity: 1,
                                                 zIndex: 0 
                                             };
