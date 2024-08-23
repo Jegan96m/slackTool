@@ -6,18 +6,37 @@
     <title>Splicing Tool</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <style>
-           #map {
-            height: 94vh;
-            width: 100%;
-            margin-top: 20px;
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+        #map{
+            padding: 0;
+            height: 100vh;
+        }
+
+        .fiberTable {
+            position: absolute;
+            border-collapse: collapse;
+            width: auto;
+            z-index: 998;
+            left: 5%;
+            top: 1%;
+            background-color: rgba(169, 169, 169, 0.7); /* Transparent gray background */
+
+        }
+
+        .fiberTable td {
+            padding: 10px;  
         }
         .legend {
-            background: white;
+            background: transparent;
             padding: 10px;
             border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 12px;
-            opacity: 0.9;
+            border: 1px solid transparent;
+            font-size: 14px;
+            opacity: 2;
         }
 
         .legend i {
@@ -33,8 +52,8 @@
             width: 18px;
             height: 18px;
             border-radius: 50%;
-            border: 2px solid transparent;
-            box-shadow: 0 0 4px rgba(0, 0, 0, 0.5); /* Outer shadow for additional ring effect */
+            border: transparent;
+            box-shadow: 0 0 10px rgb(255, 255, 0,1); /* Outer shadow for additional ring effect */
             
         }
         .leaflet-popup-content {
@@ -108,7 +127,7 @@
         .leaflet-tooltip {
             color: black;
             font-size: 12px;
-            background-color: lightgoldenrodyellow;/* Ensure background is transparent */  
+            background-color: lightgoldenrodyellow;/* Ensure background is lightgoldenrodyellow */  
             
            
         }
@@ -141,13 +160,25 @@
     </style>
 </head>
 <body>
-    <label>Upload Splicing File</label>
-    <input type="file" id="geojsonInput1" accept=".geojson,application/json">
-    <label>Upload Handhole File</label>
-    <input type="file" id="geojsonInput2" accept=".geojson,application/json">
-    <label>Upload Fiber</label>
-    <input type="file" id="geojsonInput3" accept=".geojson,application/json">
-    <a href="index.html">Slackloop tool</a>
+    <table id="fiberTable" class="fiberTable">
+        <tr>
+            <td>
+                <label>Upload Splicing File (geojson)</label>
+                <input type="file" id="geojsonInput1" accept=".geojson,application/json">
+            </td>
+            <td>
+                <label>Upload Handhole File (geojson)</label>
+                <input type="file" id="geojsonInput2" accept=".geojson,application/json">
+            </td>
+            <td>
+                <label>Upload Fiber (geojson)</label>
+                <input type="file" id="geojsonInput3" accept=".geojson,application/json">
+            </td>
+            <td>
+                <a href="index.html">Slackloop tool</a>
+            </td>
+        </tr>
+    </table> 
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
@@ -165,6 +196,7 @@
 
         var darkTheme = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             attribution: '@ Develop by JGN.',
+            subdomains: 'abcd',
             maxZoom: 99
         });
 
@@ -225,7 +257,7 @@
                                     layer.bindTooltip(`ID: ${feature.properties.ID}, FondID: ${feature.properties.FondID}`, {
                                         permanent: true,
                                         direction: 'bottom',
-                                        offset: [0, 10],  // Adjust offset to ensure visibility below the line
+                                        offset: [2, 7],  // Adjust offset to ensure visibility below the line
                                         className: 'leaflet-tooltip'
                                     }).openTooltip();
                                 }
@@ -262,11 +294,42 @@
                                 });
 
                                 if (layersAtPoint.length > 1) {
-                                    let popupContent = '<strong>Cables:</strong><p>';
-                                    layersAtPoint.forEach((layer, index) => {
-                                        popupContent += `<a href="#" data-layer-index="${index}">${layer.feature.properties.ID}- ${layer.feature.properties.FondID}</a></br>`;
+                                    let popupContent = '<strong>Cables:</strong><div style="margin-top: 5px;">';
+                                    
+                                    // Counters for specific types of layers
+                                    //let distributionCount = 0; 
+                                    //let lateralCount = 0;
+                                    //let dropCount = 0;
+                                    
+                                    layersAtPoint.forEach((layer,index) => {
+                                        const { ID,FondID, Layer } = layer.feature.properties;
+
+                                        // Increment counters based on FondID
+                                        if (Layer === 'Fiber (Distribution)') {
+                                            //distributionCount++;
+                                            popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                                                <span style="display: inline-block; width: 20px; height: 7px; background-color: orange; margin-right: 5px;"></span>
+                                                                ${ID} - ${FondID}
+                                                                
+                                                            </div>`;
+                                        } else if (Layer === 'Fiber (Lateral)') {
+                                            //lateralCount++;
+                                            popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                                                <span style="display: inline-block; width: 20px; height: 7px; background-color: red; margin-right: 5px;"></span>
+                                                                ${ID} - ${FondID}
+                                                                
+                                                            </div>`;
+                                        } else {
+                                            //dropCount++;
+                                            popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                                                <span style="display: inline-block; width: 20px; height: 5px; background-color: purple; margin-right: 5px;"></span>
+                                                                ${ID} - ${FondID}
+                                                                
+                                                            </div>`;
+                                        }
                                     });
-                                    popupContent += '</ul>';
+
+                                    popupContent += '</div>';
                                     layer.bindPopup(popupContent).openPopup();
 
                                     document.querySelectorAll('.leaflet-popup-content a').forEach(function(el) {
@@ -274,15 +337,8 @@
                                             const selectedIndex = this.getAttribute('data-layer-index');
                                             const selectedLayer = layersAtPoint[selectedIndex];
 
-                                            // Reset the previously highlighted layer if any
-                                            if (highlightedLayer) {
-                                                const previousColor = getOriginalColor(highlightedLayer.feature.properties);
-                                                highlightedLayer.setStyle({ color: previousColor });
-                                            }
-
-                                            // Highlight the selected layer
-                                            selectedLayer.setStyle({ color: 'yellow' });
-                                            highlightedLayer = selectedLayer; // Track the highlighted layer
+                                            
+                                           
 
                                             // Update the popup content with the selected layer's properties
                                             const selectedProps = selectedLayer.feature.properties;
@@ -334,7 +390,7 @@
                         const geojsonLayer = L.geoJSON(filteredGeojson, {
                             pointToLayer: function (feature, latlng) {
                                 let markerOptions = {
-                                    radius: 8,
+                                    radius: 10,
                                     weight: 2,
                                     fillOpacity:0.8,
                                     opacity: 1,
@@ -367,8 +423,8 @@
 
                                 let marker = L.circleMarker(latlng, markerOptions);
                                  // Add tooltip to the marker
-                                 marker.bindTooltip(`ID: ${feature.properties.ID}`, {
-                                        className: 'leaflet-tooltip'
+                                 marker.bindTooltip(`ID: ${feature.properties.ID}`, { 
+                                    className: 'leaflet-tooltip'
                                     });
 
                                 const popupContent = generatePopupContent(feature, firstGeoJSONCoordinates[latlng.toString()]);
@@ -387,7 +443,10 @@
                                 padding: [20, 20],
                                 maxZoom: 15
                             });
-                        }createLegend();  // Call the function to create the legend after the third GeoJSON is added
+                        }
+                        createLegend();  // Call the function to create the legend after the third GeoJSON is added
+                         // Update the legend colors based on the initial theme
+                         updateLegendColors(map.hasLayer(darkTheme));
                     }
                 } catch (error) {
                     alert('Invalid GeoJSON file.');
@@ -438,7 +497,7 @@
             let page2Content = '';
             let page3Content = '';
 
-            if (fondID === "null") {
+            if (fondID==="null") {
                 page1Content = '';
                 page2Content = '';
                 page3Content = '';
@@ -490,18 +549,20 @@
             legend.onAdd = function() {
                 const div = L.DomUtil.create('div', 'legend');
                 div.innerHTML = `
-                    <strong>Handhole Layer</strong><br>
-                    <i class="color-box" style="background: #39ff14;"></i> PS<br>
-                    <i class="color-box" style="background: #ff073a;"></i> SS<br>
-                    <i class="color-box" style="background: #0CAFFF;"></i> Splice<br>
-                    <i class="color-box" style="background: purple;"></i> PS & SS<br>
-                    <i class="color-box" style="background: rgba(0, 0, 0, 0.5);"></i> None
+                    <strong><span style="font-size: 20px;">Handhole Layer</strong><p>
+                    <i class="color-box" style="background:rgba(0, 255, 0, 0.5); box-shadow:2px 0 10px rgb(0, 255, 0, 1)"></i> PS<p>
+                    <i class="color-box" style="background: #ff073a; box-shadow:2px 0 10px rgb(255, 7, 58, 1) "></i> SS<p>
+                    <i class="color-box" style="background: #0CAFFF;box-shadow:2px 0 10px rgb(12, 175, 255, 1)"></i> Splice<p>
+                    <i class="color-box" style="background: #FF00FF;box-shadow:2px 0 10px rgb(128, 0, 128, 1)"></i> PS & SS<p>
+                    <i class="color-box" style="background: rgb(255, 255, 255, 0.1);"></i> None
                 `;
                 return div;
             };
 
             legend.addTo(map);
         }
+
+        
 
         function attachPopupNavigation() {
             document.addEventListener('click', function(event) {
@@ -520,6 +581,53 @@
                 button.classList.toggle('active', button.getAttribute('data-page') === pageId);
             });
         }
+
+         // Function to update legend colors
+            function updateLegendColors(isDarkTheme) {
+                const legend = document.querySelector('.legend'); // Ensure this selector matches your legend's class or ID
+                if (legend) {
+                    if (isDarkTheme) {
+                        legend.style.backgroundColor = 'transparent';
+                        legend.style.color = 'white';
+                        // Update colors for each item in the legend if needed
+                        legend.querySelectorAll('i').forEach(function (item) {
+                            if (item.style.backgroundColor === 'red') item.style.backgroundColor = '#ff6666';
+                            if (item.style.backgroundColor === 'orange') item.style.backgroundColor = '#ffcc66';
+                            if (item.style.backgroundColor === '#CC00FF') item.style.backgroundColor = '#e066ff';
+                        });
+                    } else {
+                        legend.style.backgroundColor = 'transparent';
+                        legend.style.color = 'black';
+                        // Reset colors for each item in the legend if needed
+                        legend.querySelectorAll('i').forEach(function (item) {
+                            if (item.style.backgroundColor === '#ff6666') item.style.backgroundColor = 'red';
+                            if (item.style.backgroundColor === '#ffcc66') item.style.backgroundColor = 'orange';
+                            if (item.style.backgroundColor === '#e066ff') item.style.backgroundColor = '#CC00FF';
+                        });
+                    }
+                }
+            }
+
+        // Listen for changes to the base layer and update the legend colors accordingly
+        map.on('baselayerchange', function (eventLayer) {
+            if (eventLayer.name === "Dark Theme") {
+                updateLegendColors(true);
+            } else {
+                updateLegendColors(false);
+            }
+        });
+
+       // Function to highlight the selected layer
+        function highlightLayer(index) {
+            // Reset all layers to their original color (optional)
+            layersAtPoint.forEach((layer) => {
+                layer.setStyle({ color: layer.feature.properties.Layer === 'Fiber (Distribution)' ? 'orange' : 'red' });
+            });
+
+            // Set the clicked layer to blue
+            layersAtPoint[index].setStyle({ color: 'blue' });
+        }
+
 
         document.getElementById('geojsonInput1').addEventListener('change', function() {
             handleGeoJSONUpload(this, true, false);
