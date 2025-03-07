@@ -18,7 +18,7 @@
         }
 
         .leaflet-control-attribution {
-            font-size: 1px; /* Change this to your desired font size */
+            font-size: 18px; /* Change this to your desired font size */
         }
 
         .fiberTable {
@@ -284,7 +284,7 @@
     <script>
          const map = L.map('map',{
             maxBounds: L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180)),
-            minZoom: 2.5,
+            minZoom: 2.3,
             attributionControl:false
         }).setView([0, 0], 2);
 
@@ -717,7 +717,7 @@
                 }
             }
 
-        // Listen for changes to the toggle switch and update the legend colors accordingly
+        // Listen for changes to the toggle and update the legend colors accordingly
         const themeSwitch = document.getElementById('themeSwitch');
 
         // Set initial state to dark theme
