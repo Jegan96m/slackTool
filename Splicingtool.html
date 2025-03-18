@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Slackloop QC tool</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splicing Tool</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <style>
-          body, html {
+        body, html {
             margin: 0;
             padding: 0;
             height: 100%;
+            
         }
         #map{
             padding: 0;
@@ -33,58 +35,254 @@
         .fiberTable td {
             padding: 10px;  
         }
-        .highlight {
-            color: red;
-            font-weight: bold;
-        }
-        .custom-popup {
-            max-height: 150px; /* Set the max height for the popup */
-            overflow-y: auto; /* Enable vertical scrolling */
-        }
         .legend {
-            background-color: white;
+            background: transparent;
             padding: 10px;
-            line-height: 18px;
-            color: #333;
-            opacity: 0.7;
+            border-radius: 5px;
+            border: 1px solid transparent;
+            font-size: 14px;
+            opacity: 2;
         }
+
         .legend i {
             width: 18px;
             height: 18px;
-            float: left;
             margin-right: 8px;
-            opacity: 0.7;
+            border-radius: 50%;
+            display: inline-block;
         }
-        .legend .circle {
-            border-radius: 50%; /* Make the shape round */
+
+        .legend .color-box {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: transparent;
+            box-shadow: 0 0 10px rgb(255, 255, 0,1); /* Outer shadow for additional ring effect */
+            
         }
+        .leaflet-popup-content {
+            display: flex;
+            resize: horizontal;
+            max-height: 300px;
+            overflow: auto;
+        }
+        .leaflet-popup-content-wrapper {
+            white-space: nowrap; /* Prevent line breaks */
+            width: auto; /* Let the content dictate the width */ 
+            overflow-x: auto;          
+        }
+
+        .popup-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .page-content {
+            flex: 1;
+            overflow: auto;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .page-header {
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .page-body {
+            padding: 10px;
+            font-size: 14px;
+        }
+        .page-body p {
+            white-space: nowrap; /* Prevent line breaks */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add '...' if the text overflows */
+        }
+
+        .nav-buttons {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background-color: #f4f4f4;
+            box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
+        }
+        .nav-buttons button {
+            margin: 2px 0;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .nav-buttons button.active {
+            background-color: #ddd;
+            border-color: #ccc;
+            font-weight: bold;
+        }
+        .leaflet-tooltip {
+            color: black;
+            font-size: 12px;
+            background-color: lightgoldenrodyellow;/* Ensure background is lightgoldenrodyellow */  
+            
+           
+        }
+        .neon-marker-green {
+            box-shadow: 0 0 5px #39ff14, 
+                        0 0 10px #39ff14, 
+                        0 0 15px #39ff14, 
+                        0 0 20px #39ff14;
+        }
+        .neon-marker-red {
+            box-shadow: 0 0 5px #ff073a, 
+                        0 0 10px #ff073a, 
+                        0 0 15px #ff073a, 
+                        0 0 20px #ff073a;
+        }
+        .neon-marker-purple {
+            box-shadow: 0 0 5px #FF00FF, 
+                        0 0 10px #FF00FF, 
+                        0 0 15px #FF00FF, 
+                        0 0 20px #FF00FF;
+        }
+        .neon-marker-purple {
+            box-shadow: 0 0 5px #0000FF, 
+                        0 0 10px #0000FF, 
+                        0 0 15px #0000FF, 
+                        0 0 20px #0000FF;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .theme-toggle input {
+            display: none;
+        }
+
+        .theme-toggle label {
+            display: flex;
+            align-items: center;
+            width: 70px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            box-sizing: border-box;
+            padding-left: 8px;
+            color: #ffffff;
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Fixed text inside the switch */
+        .theme-toggle label .theme-text {
+            position: absolute;
+            left: 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Sliding knob (circle) */
+        .theme-toggle label .knob {
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Bouncy ease */
+            z-index: 2;
+        }
+
+        /* Dark theme (checked) */
+        .theme-toggle input:checked + label {
+            background: transparent;
+            box-shadow: 0 0 12px rgba(76, 175, 80, 0.7);
+        }
+
+        .theme-toggle input:checked + label .knob {
+            left: calc(100% - 25px);
+        }
+
+        /* Light theme (unchecked) */
+        .theme-toggle input:not(:checked) + label {
+            background: transparent;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Text change */
+        .theme-toggle input:checked + label .theme-text::before {
+            content: 'Dark';
+        }
+
+        .theme-toggle input:not(:checked) + label .theme-text::before {
+            content: 'Light';
+            color: #333;
+            padding-left: 20px;
+        }
+
+        .theme-toggle input:not(:checked) + label .knob {
+            background: #333;
+        }
+
+
+
     </style>
 </head>
 <body>
     <table id="fiberTable" class="fiberTable">
         <tr>
             <td>
-                <label for="geojsonInput1">Original Slackloop (geojson)</label>
-                <input type="file" id="geojsonInput1" accept=".geojson">
+                <label>Upload Splicing File (geojson)</label>
+                <input type="file" id="geojsonInput1" accept=".geojson,application/json">
             </td>
             <td>
-                <label for="geojsonInput2">Plan Slackloop (geojson)</label>
-                <input type="file" id="geojsonInput2" accept=".geojson">
+                <label>Upload Handhole File (geojson)</label>
+                <input type="file" id="geojsonInput2" accept=".geojson,application/json">
             </td>
             <td>
-                <label for="geojsonInput3">Upload Fiber (geojson)</label>
-                <input type="file" id="geojsonInput3" accept=".geojson" multiple>
+                <label>Upload Fiber (geojson)</label>
+                <input type="file" id="geojsonInput3" accept=".geojson,application/json">
             </td>
             <td>
-                <a href="/Splicingtool.html">Splicing tool</a>
+                <a href="slcktool.html">Slackloop tool</a>
             </td>
         </tr>
-    </table>
+    </table> 
     <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <div class="theme-toggle">
+        <input type="checkbox" id="themeSwitch" checked />
+        <label for="themeSwitch">
+            <span class="theme-text"></span>
+            <span class="knob"></span>
+        </label>
+    </div>
+    
+
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script>
-        const map = L.map('map',{
+         const map = L.map('map',{
             maxBounds: L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180)),
             minZoom: 2.3,
             attributionControl:false
@@ -94,222 +292,480 @@
             position: 'bottomright',
             prefix: '<a href="https://app.vetro.io/fibermap/" target="_blank">Vetro</a>' // Custom 
         }).addTo(map);
- 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '@ Develop by JGN',
+
+
+        // Define base layers
+        var lightTheme =  L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'], 
+            attribution: '© Developed by JGN',
             maxZoom: 99
-        }).addTo(map);
+        });
 
-        function calculateDistance(latlng1, latlng2) {
-            return map.distance(latlng1, latlng2);
-        }
+        var darkTheme = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© Developed by JGN',
+            subdomains: 'abcd',
+            maxZoom: 99
+        });
 
-        var geojsonData1 = null;
-        var geojsonData2 = null;
-        var geojsonLayers3 = []; // Array to store multiple layers for the third GeoJSON
+        // Add initial layer
+        darkTheme.addTo(map);
 
-        var geojsonLayer1 = null;
-
-        function processGeoJSON(fileInputId, callback) {
-            var fileInput = document.getElementById(fileInputId);
-            fileInput.addEventListener('change', function(event) {
-                var files = event.target.files;
-                if (files.length > 0) {
-                    var fileReaders = [];
-                    for (var i = 0; i < files.length; i++) {
-                        (function(file) {
-                            var reader = new FileReader();
-                            reader.onload = function(e) {
-                                var geojsonData = JSON.parse(e.target.result);
-                                if (fileInputId === 'geojsonInput1') {
-                                    geojsonData1 = geojsonData;
-                                    if (geojsonData2) {
-                                        updateMapWithCounts();
-                                    }
-                                } else if (fileInputId === 'geojsonInput2') {
-                                    geojsonData2 = geojsonData;
-                                    if (geojsonData1) {
-                                        updateMapWithCounts();
-                                    }
-                                } else if (fileInputId === 'geojsonInput3') {
-                                    var geojsonLayer = L.geoJSON(geojsonData, {
-                                        style: function (feature) {
-                                            var layerType = feature.properties.Layer || ''; // Adjust this path according to your GeoJSON structure
-                                            return {
-                                                color: (layerType === 'Fiber (Lateral)') ? 'red' : 'orange',
-                                                weight: 4,
-                                                opacity: 1,
-                                                zIndex: 0 
-                                            };
-                                        }
-                                    }).addTo(map);
-                                    geojsonLayers3.push(geojsonLayer); // Store the layer
-                                    if (geojsonData1 && geojsonData2) {
-                                        updateMapWithCounts();
-                                    }
-                                }
-                                if (callback) callback(geojsonData);
-                            };
-                            reader.readAsText(file);
-                            fileReaders.push(reader);
-                        })(files[i]);
-                    }
-                }
-            });
-        }
-
-        function updateMapWithCounts() {
-            var coordCounts1 = {};
-
-            geojsonData1.features.forEach(function(feature) {
-                var coords = feature.geometry.coordinates.join(',');
-                coordCounts1[coords] = (coordCounts1[coords] || 0) + 1;
-            });
-
-            if (geojsonLayer1) map.removeLayer(geojsonLayer1);
-
-            geojsonLayer1 = L.geoJSON(geojsonData1, {
-                pointToLayer: function (feature, latlng) {
-                    var countWithinRadius = 0;
-                    var coords = feature.geometry.coordinates.join(',');
-                    var radius = (coordCounts1[coords] > 1) ? 9.144 : 4.572;
-
-                    geojsonData2.features.forEach(function(otherFeature) {
-                        var otherLatLng = L.latLng(otherFeature.geometry.coordinates[1], otherFeature.geometry.coordinates[0]);
-                        if (calculateDistance(latlng, otherLatLng) <= radius) {
-                            countWithinRadius++;
-                        }
-                    });
-
-                    var countSameCoords = coordCounts1[coords] || 0;
-                    var markerColor;
-                    var outlineColor = "blue";
-
-                    if (countWithinRadius > countSameCoords) {
-                        markerColor = "yellow";
-                    } else if (countWithinRadius === countSameCoords) {
-                        markerColor = "#a3f307";
-                    } else {
-                        markerColor = "red";
-                    }
-
-                    var marker = L.circleMarker(latlng, {
-                        radius: 8,
-                        fillColor: markerColor,
-                        color: outlineColor,
-                        weight: 1,
-                        opacity: 1,
-                        fillOpacity: 0.8
-                    });
-
-                    var popupContent = "Inserted slack count: " + (countWithinRadius > countSameCoords ? "<span class='highlight'>" + countWithinRadius + "</span>" : countWithinRadius);
-                    popupContent += "<br>Original slack count: " + countSameCoords + "<br>";
-
-                    var length25Count = 0;
-                    var length50Count = 0;
-                    var totalLength25Count = 0;
-                    var totalLength50Count = 0;
-
-                    if (countSameCoords >= 2) {
-                        var lengths = [];
-                        geojsonData1.features.forEach(function(f) {
-                            var fCoords = f.geometry.coordinates.join(',');
-                            if (fCoords === coords) {
-                                var length = f.properties.Length || 'N/A';
-                                if (length === 25) length25Count++;
-                                if (length === 50) length50Count++;
-                            }
-                        });
-                    } else {
-                        var length = feature.properties.Length || 'N/A';
-                        if (length === 25) length25Count++;
-                        if (length === 50) length50Count++;
-                    }
-
-                    var parentVetroIdCounts = {};
-                    var hasDuplicate = false;
-
-                    geojsonData2.features.forEach(function(otherFeature) {
-                        var otherLatLng = L.latLng(otherFeature.geometry.coordinates[1], otherFeature.geometry.coordinates[0]);
-                        if (calculateDistance(latlng, otherLatLng) <= radius) {
-                            var parentVetroId = otherFeature.properties.parent_vetro_id || 'N/A';
-                            var length2 = otherFeature.properties.Length || 'N/A';
-
-                            if (length2 === 25) totalLength25Count++;
-                            if (length2 === 50) totalLength50Count++;
-
-                            if (!parentVetroIdCounts[parentVetroId]) {
-                                parentVetroIdCounts[parentVetroId] = 0;
-                            }
-                            parentVetroIdCounts[parentVetroId]++;
-
-                            if (parentVetroIdCounts[parentVetroId] > 1) {
-                                hasDuplicate = true;
-                            }
-
-                            var coordinatesLink = "https://app.vetro.io/fibermap/map#25/" + otherFeature.geometry.coordinates[1] + "/" + otherFeature.geometry.coordinates[0];
-                            var linkClass = (parentVetroIdCounts[parentVetroId] > 1) ? "highlight" : "";
-
-                            var coordinatesStyle = parentVetroIdCounts[parentVetroId] > 1 ? "<span class='highlight'>" : "";
-                            var coordinatesEndStyle = parentVetroIdCounts[parentVetroId] > 1 ? "</span>" : "";
-
-                            popupContent += "<br>parent_vetro_id: " + (parentVetroIdCounts[parentVetroId] > 1 ? "<span class='highlight'>" + parentVetroId + "</span>" : parentVetroId);
-                            popupContent += "<br>Length: " + length2;
-                            popupContent += "<br>Coordinates: " + coordinatesStyle + "[" + otherFeature.geometry.coordinates.join(', ') + "]" + coordinatesEndStyle;
-                            popupContent += "<br><a class='" + linkClass + "' href='" + coordinatesLink + "' target='_blank'>View Location</a><br>";
-                        }
-                    });
-
-                    popupContent += "<br><strong>Total Inserted Length 25:</strong> " + (totalLength25Count > length25Count ? "<span class='highlight'>" + totalLength25Count + "</span>" : totalLength25Count);
-                    popupContent += "<br>Total Original Length 25: " + length25Count + "<br>";
-                    popupContent += "<br><strong>Total Inserted Length 50:</strong> " + (totalLength50Count > length50Count ? "<span class='highlight'>" + totalLength50Count + "</span>" : totalLength50Count);
-                    popupContent += "<br>Total Original Length 50: " + length50Count;
-
-                    if (hasDuplicate) {
-                        marker.setStyle({
-                            fillColor: "blue",
-                            color: outlineColor
-                        });
-                    } else if (length25Count === totalLength25Count && length50Count === totalLength50Count && countWithinRadius === countSameCoords) {
-                        marker.setStyle({
-                            fillColor: "#a3f307",
-                            color: outlineColor
-                        });
-                    } else if ((totalLength25Count > length25Count || totalLength50Count > length50Count) && countWithinRadius === countSameCoords) {
-                        marker.setStyle({
-                            fillColor: "yellow",
-                            color: outlineColor
-                        });
-                    }
-
-                    marker.bindPopup("<div class='custom-popup'>" + popupContent + "</div>");
-                    return marker;
-                }
-            }).addTo(map);
-
-            if (geojsonData1.features.length > 0) {
-                var bounds = L.featureGroup([geojsonLayer1]).getBounds();
-                map.fitBounds(bounds);
+        // Handle switch toggle
+        document.getElementById('themeSwitch').addEventListener('change', function (e) {
+            if (e.target.checked) {
+                darkTheme.addTo(map);
+                lightTheme.remove();
+            } else {
+                lightTheme.addTo(map);
+                darkTheme.remove();
             }
+        });
+
+
+        let firstGeoJSONCoordinates = {};
+        let thirdGeoJSONFondid = [];
+       
+
+        function handleGeoJSONUpload(inputElement, isFirst, isThird) {
+        const file = inputElement.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const geojson = JSON.parse(e.target.result);
+
+                    if (isFirst) {
+                        firstGeoJSONCoordinates = extractCoordinatesWithProperties(geojson);
+                    } else if (isThird) {
+                        // Directly add the third GeoJSON to the map without any filtering
+                        const geojsonLayer = L.geoJSON(geojson, {
+                            style: function(feature) {
+                                let color;
+                                let opacity;
+                                let weight;
+                                if (feature.properties.Layer === 'Fiber (Lateral)') {
+                                    color = 'red';
+                                    weight = 6;
+                                } else if (feature.properties.Layer === 'Fiber (Distribution)') {
+                                    color = 'orange';
+                                    weight = 6;
+                                } else {
+                                    color = '#CC00FF';
+                                    weight = 3;
+                                }
+
+                                return {
+                                    color: color,
+                                    weight: weight,
+                                    opacity: 0.8
+                                };
+                            },
+                            onEachFeature: function(feature, layer) {
+                                // Add a permanent label displaying the fondid below the line
+                                if (feature.properties.FondID) {
+                                    layer.bindTooltip(`ID: ${feature.properties.ID}, FondID: ${feature.properties.FondID}`, {
+                                        permanent: true,
+                                        direction: 'bottom',
+                                        offset: [2, 7],  // Adjust offset to ensure visibility below the line
+                                        className: 'leaflet-tooltip'
+                                    }).openTooltip();
+                                }
+                               // Change color on mouseover
+                                layer.on('mouseover', function() {
+                                    layer.setStyle({
+                                        color: 'yellow'
+                                    });
+                                });
+
+                                // Reset color on mouseout
+                                layer.on('mouseout', function() {
+                                    // Reset to original color based on properties
+                                    let resetColor;
+                                    if (feature.properties.Layer === 'Fiber (Lateral)') {
+                                        resetColor = 'red';
+                                    } else if (feature.properties.Layer === 'Fiber (Distribution)') {
+                                        resetColor = 'orange';
+                                    } else {
+                                        resetColor = '#CC00FF';
+                                    }
+
+                                    layer.setStyle({
+                                        color: resetColor
+                                    });
+                                });
+                             // Bind popup with some content (customize as needed)
+                             layer.on('click', function(e) {
+                                const layersAtPoint = [];
+                                map.eachLayer(function(layer) {
+                                    if (layer.feature && layer.getBounds && layer.getBounds().contains(e.latlng)) {
+                                        layersAtPoint.push(layer);
+                                    }
+                                });
+
+                                if (layersAtPoint.length > 1) {
+                                    let popupContent = '<strong>Cables:</strong><div style="margin-top: 5px;">';
+                                    
+                                    // Counters for specific types of layers
+                                    //let distributionCount = 0; 
+                                    //let lateralCount = 0;
+                                    //let dropCount = 0;
+                                    
+                                    layersAtPoint.forEach((layer,index) => {
+                                        const { ID,FondID, Layer } = layer.feature.properties;
+
+                                        // Increment counters based on FondID
+                                        if (Layer === 'Fiber (Distribution)') {
+                                            //distributionCount++;
+                                            popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                                                <span style="display: inline-block; width: 20px; height: 7px; background-color: orange; margin-right: 5px;"></span>
+                                                                ${ID} - ${FondID}
+                                                                
+                                                            </div>`;
+                                        } else if (Layer === 'Fiber (Lateral)') {
+                                            //lateralCount++;
+                                            popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                                                <span style="display: inline-block; width: 20px; height: 7px; background-color: red; margin-right: 5px;"></span>
+                                                                ${ID} - ${FondID}
+                                                                
+                                                            </div>`;
+                                        } else {
+                                            //dropCount++;
+                                            popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                                                <span style="display: inline-block; width: 20px; height: 5px; background-color: purple; margin-right: 5px;"></span>
+                                                                ${ID} - ${FondID}
+                                                                
+                                                            </div>`;
+                                        }
+                                    });
+
+                                    popupContent += '</div>';
+                                    layer.bindPopup(popupContent).openPopup();
+
+                                    document.querySelectorAll('.leaflet-popup-content a').forEach(function(el) {
+                                        el.addEventListener('click', function() {
+                                            const selectedIndex = this.getAttribute('data-layer-index');
+                                            const selectedLayer = layersAtPoint[selectedIndex];
+
+                                            
+                                           
+
+                                            // Update the popup content with the selected layer's properties
+                                            const selectedProps = selectedLayer.feature.properties;
+                                            const selectedContent = `
+                                                <strong>ID:</strong> ${selectedProps.ID}<br>
+                                                <strong>FondID:</strong> ${selectedProps.FondID}<br>
+                                                <strong>Layer:</strong> ${selectedProps.Layer}
+                                            `;
+                                            layer.setPopupContent(selectedContent);
+                                        });
+                                    });
+                                } else {
+                                    layer.openPopup();
+                                }
+                            });
+
+                            layer.bindPopup(`
+                                <div>
+                                    <strong>ID:</strong> ${feature.properties.ID}<br>
+                                    <strong>FondID:</strong> ${feature.properties.FondID}<br>
+                                    <strong>Layer:</strong> ${feature.properties.Layer}
+                                </div>
+                            `);
+                        }
+                    }).addTo(map);
+
+                        // Adjust the map view to fit the bounds of the third GeoJSON
+                        if (geojson.features.length > 0) {
+                            map.fitBounds(L.geoJSON(geojson).getBounds(), {
+                                padding: [20, 20],
+                                maxZoom: 15
+                            });
+                        }
+                        function getOriginalColor(properties) {
+                            if (properties.Layer === 'Fiber (Lateral)') {
+                                return 'red';
+                            } else if (properties.Layer === 'Fiber (Distribution)') {
+                                return 'orange';
+                            } else {
+                                return '#CC00FF';
+                            }
+                        }
+
+                    
+
+                    } else {
+                        const filteredGeojson = filterGeoJSONByCoordinates(geojson, Object.keys(firstGeoJSONCoordinates));
+
+                        const geojsonLayer = L.geoJSON(filteredGeojson, {
+                            pointToLayer: function (feature, latlng) {
+                                let markerOptions = {
+                                    radius: 10,
+                                    weight: 2,
+                                    fillOpacity:0.8,
+                                    opacity: 1,
+                                    
+                                };
+
+                                const equipmentType = feature.properties.Equipment;
+                                if (equipmentType === 'PS') {
+                                    markerOptions.fillColor = "#39ff14";
+                                    markerOptions.color = "#39ff14";
+                                    markerOptions.className = "neon-marker-green"
+                                } else if (equipmentType === 'SS') {
+                                    markerOptions.fillColor = "#ff073a";
+                                    markerOptions.color = "#ff073a";
+                                    markerOptions.className = "neon-marker-red"
+                                } else if (equipmentType === 'None') {
+                                    markerOptions.fillColor = "white";
+                                    markerOptions.fillOpacity = "0.1";
+                                    markerOptions.color = "yellow";
+                                    markerOptions.opacity = "0.5";
+                                } else if (equipmentType === 'Splice') {
+                                    markerOptions.fillColor = "#0CAFFF";
+                                    markerOptions.color = "#0000FF";
+                                    markerOptions.className = "neon-marker-blue"
+                                } else if (equipmentType === 'PS & SS') {
+                                    markerOptions.fillColor = "#EE82EE";
+                                    markerOptions.color = "#FF00FF";
+                                    markerOptions.className = "neon-marker-purple"
+                                }
+
+                                let marker = L.circleMarker(latlng, markerOptions);
+                                 // Add tooltip to the marker
+                                 marker.bindTooltip(`ID: ${feature.properties.ID}`, { 
+                                    className: 'leaflet-tooltip'
+                                    });
+
+                                const popupContent = generatePopupContent(feature, firstGeoJSONCoordinates[latlng.toString()]);
+                                marker.bindPopup(popupContent);
+                                
+                                return marker;
+                                
+                            }
+                            
+                        }).addTo(map);
+
+                        
+
+                        if (filteredGeojson.features.length > 0) {
+                            map.fitBounds(L.geoJSON(filteredGeojson).getBounds(), {
+                                padding: [20, 20],
+                                maxZoom: 15
+                            });
+                        }
+                        createLegend();  // Call the function to create the legend after the third GeoJSON is added
+                         // Update the legend colors based on the initial theme
+                         updateLegendColors(map.hasLayer(darkTheme));
+                    }
+                } catch (error) {
+                    alert('Invalid GeoJSON file.');
+                }
+            };
+            reader.readAsText(file);
+        }
+    }
+
+        function extractCoordinatesWithProperties(geojson) {
+            const coordinates = {};
+            L.geoJSON(geojson, {
+                onEachFeature: function (feature, layer) {
+                    if (feature.geometry.type === "Point") {
+                        coordinates[layer.getLatLng().toString()] = feature.properties;
+                    }
+                }
+            });
+            return coordinates;
         }
 
-        var legend = L.control({ position: 'bottomright' });
+        function filterGeoJSONByCoordinates(geojson, coordinatesToMatch) {
+            return {
+                ...geojson,
+                features: geojson.features.filter(feature => {
+                    if (feature.geometry.type === "Point") {
+                        const latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]).toString();
+                        return coordinatesToMatch.includes(latlng);
+                    }
+                    return false;
+                })
+            };
+        }
 
-        legend.onAdd = function(map) {
-            var div = L.DomUtil.create('div', 'legend');
-            div.innerHTML += '<strong><span style="font-size: 20px;">Legend</strong><p>';
-            div.innerHTML += '<i class="circle" style="background: #a3f307"></i> Slackloop Pass<p>';
-            div.innerHTML += '<i class="circle" style="background: yellow"></i>Incorrect Slackloop Length<p>';
-            div.innerHTML += '<i class="circle" style="background: red"></i> Missing Slackloop<p>';
-            div.innerHTML += '<i class="circle" style="background: blue"></i> Duplicate Slackloop';
-            return div;
-        };
+        function generatePopupContent(feature, firstGeoJsonProperties) {
+            const properties = feature.properties;
+            const fondID = feature.properties.Spec || 'null';
+            const Handhole = feature.properties.ID;
+            const equipmentType = feature.properties.Equipment;
+            const hubName = firstGeoJsonProperties.hubName ? firstGeoJsonProperties.hubName : "";
+            const connections = firstGeoJsonProperties.connections ? firstGeoJsonProperties.connections.split(', ').map(part => part.trim()).join('<br>')  : "";
+            const hubb = firstGeoJsonProperties.hubb ? firstGeoJsonProperties.hubb : "";
+            const conn = firstGeoJsonProperties.conn ? firstGeoJsonProperties.conn.split(', ').map(part => part.trim()).join('<br>')  : "";
+            const hubbb = firstGeoJsonProperties.hubbb ? firstGeoJsonProperties.hubbb : "";
+            const connn = firstGeoJsonProperties.connn ? firstGeoJsonProperties.connn.split(', ').map(part => part.trim()).join('<br>')  : "";
 
-        legend.addTo(map);
+            let page1Content = '';
+            let page2Content = '';
+            let page3Content = '';
 
-        processGeoJSON('geojsonInput1');
-        processGeoJSON('geojsonInput2');
-        processGeoJSON('geojsonInput3');
+            if (fondID==="null") {
+                page1Content = '';
+                page2Content = '';
+                page3Content = '';
+            } else {
+                page1Content = `<div class="page-header">${Handhole}</div>
+                                <div class="page-body">                                  
+                                    <p><strong>Hub:${hubName}</strong></p>
+                                    <p><strong>Splicing:</strong><br>${connections}</br></p>
+                                </div>`;
+                page2Content = `<div class="page-header">${Handhole}</div>
+                                <div class="page-body">
+                                   <p><strong>Hub:${hubb}</strong></p>
+                                    <p><strong>Splicing:</strong><br>${conn}</br></p>
+                                </div>`;
+                page3Content = `<div class="page-header">${Handhole}</div>
+                                <div class="page-body">
+                                    <p><strong>Hub:${hubbb}</strong></p>
+                                    <p><strong>Splicing:</strong><br>${connn}</br></p>
+                                </div>`;
+            }
+
+            const content = `
+                <div class="popup-container">
+                    <div class="page-content">
+                        <div id="page1" class="page active">
+                            ${page1Content}
+                        </div>
+                        <div id="page2" class="page">
+                            ${page2Content}
+                        </div>
+                        <div id="page3" class="page">
+                            ${page3Content}
+                        </div>
+                    </div>
+                    <div class="nav-buttons">
+                        <button data-page="page1">1</button>
+                        <button data-page="page2">2</button>
+                        <button data-page="page3">3</button>
+                    </div>
+                </div>
+            `;
+
+            return content;
+        }
+
+        function createLegend() {
+            const legend = L.control({ position: 'bottomright' });
+
+            legend.onAdd = function() {
+                const div = L.DomUtil.create('div', 'legend');
+                div.innerHTML = `
+                    <strong><span style="font-size: 20px;">Legend</strong><p>
+                    <i class="color-box" style="background:rgba(0, 255, 0, 0.5); box-shadow:2px 0 10px rgb(0, 255, 0, 1)"></i> PS<p>
+                    <i class="color-box" style="background: #ff073a; box-shadow:2px 0 10px rgb(255, 7, 58, 1) "></i> SS<p>
+                    <i class="color-box" style="background: #0CAFFF;box-shadow:2px 0 10px rgb(12, 175, 255, 1)"></i> Splice<p>
+                    <i class="color-box" style="background: #FF00FF;box-shadow:2px 0 10px rgb(128, 0, 128, 1)"></i> PS & SS<p>
+                    <i class="color-box" style="background: rgb(255, 255, 255, 0.1);"></i> None
+                `;
+                return div;
+            };
+
+            legend.addTo(map);
+        }
+
+        
+
+        function attachPopupNavigation() {
+            document.addEventListener('click', function(event) {
+                if (event.target.matches('.nav-buttons button')) {
+                    const pageId = event.target.getAttribute('data-page');
+                    showPage(pageId);
+                }
+            });
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.toggle('active', page.id === pageId);
+            });
+            document.querySelectorAll('.nav-buttons button').forEach(button => {
+                button.classList.toggle('active', button.getAttribute('data-page') === pageId);
+            });
+        }
+
+         // Function to update legend colors
+            function updateLegendColors(isDarkTheme) {
+                const legend = document.querySelector('.legend'); // Ensure this selector matches your legend's class or ID
+                if (legend) {
+                    if (isDarkTheme) {
+                        legend.style.backgroundColor = 'transparent';
+                        legend.style.color = 'white';
+                        // Update colors for each item in the legend if needed
+                        legend.querySelectorAll('i').forEach(function (item) {
+                            if (item.style.backgroundColor === 'red') item.style.backgroundColor = '#ff6666';
+                            if (item.style.backgroundColor === 'orange') item.style.backgroundColor = '#ffcc66';
+                            if (item.style.backgroundColor === '#CC00FF') item.style.backgroundColor = '#e066ff';
+                        });
+                    } else {
+                        legend.style.backgroundColor = 'transparent';
+                        legend.style.color = 'black';
+                        // Reset colors for each item in the legend if needed
+                        legend.querySelectorAll('i').forEach(function (item) {
+                            if (item.style.backgroundColor === '#ff6666') item.style.backgroundColor = 'red';
+                            if (item.style.backgroundColor === '#ffcc66') item.style.backgroundColor = 'orange';
+                            if (item.style.backgroundColor === '#e066ff') item.style.backgroundColor = '#CC00FF';
+                        });
+                    }
+                }
+            }
+
+        // Listen for changes to the toggle and update the legend colors accordingly
+        const themeSwitch = document.getElementById('themeSwitch');
+
+        // Set initial state to dark theme
+        map.addLayer(darkTheme); // Default to dark
+        updateLegendColors(true); // Set legend to match dark theme initially
+
+        themeSwitch.addEventListener('change', function () {
+            const isDark = themeSwitch.checked;
+
+            if (isDark) {
+                map.removeLayer(lightTheme);
+                map.addLayer(darkTheme);
+            } else {
+                map.removeLayer(darkTheme);
+                map.addLayer(lightTheme);
+            }
+
+            // Directly update the legend colors based on the theme
+            updateLegendColors(isDark);
+        });
+
+       // Function to highlight the selected layer
+        function highlightLayer(index) {
+            // Reset all layers to their original color (optional)
+            layersAtPoint.forEach((layer) => {
+                layer.setStyle({ color: layer.feature.properties.Layer === 'Fiber (Distribution)' ? 'orange' : 'red' });
+            });
+
+            // Set the clicked layer to blue
+            layersAtPoint[index].setStyle({ color: 'blue' });
+        }
+
+
+        document.getElementById('geojsonInput1').addEventListener('change', function() {
+            handleGeoJSONUpload(this, true, false);
+        });
+
+        document.getElementById('geojsonInput2').addEventListener('change', function() {
+            handleGeoJSONUpload(this, false, false);
+        });
+
+        document.getElementById('geojsonInput3').addEventListener('change', function() {
+            handleGeoJSONUpload(this, false, true);
+        });
+
+        map.on('popupopen', function() {
+            attachPopupNavigation();
+        });
     </script>
 </body>
 </html>
