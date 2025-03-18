@@ -84,14 +84,15 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map', {
+        const map = L.map('map',{
             maxBounds: L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180)),
-            minZoom: 2,
+            minZoom: 2.3,
+            attributionControl:false
         }).setView([0, 0], 2);
 
         L.control.attribution({
-          position: 'bottomright',
-          prefix: '<a href="https://app.vetro.io/fibermap/" target="_blank">Vetro</a>' // Custom 
+            position: 'bottomright',
+            prefix: '<a href="https://app.vetro.io/fibermap/" target="_blank">Vetro</a>' // Custom 
         }).addTo(map);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
