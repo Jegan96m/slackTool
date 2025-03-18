@@ -16,7 +16,7 @@
         }
 
         .leaflet-control-attribution {
-         font-size: 18px ; /* Change this to your desired font size */
+            font-size: 18px; /* Change this to your desired font size */
         }
 
         .fiberTable {
@@ -76,7 +76,7 @@
                 <input type="file" id="geojsonInput3" accept=".geojson" multiple>
             </td>
             <td>
-                <a href="Splicingtool.html">Splicing tool</a>
+                <a href="/Splicingtool.html">Splicing tool</a>
             </td>
         </tr>
     </table>
@@ -94,7 +94,7 @@
             position: 'bottomright',
             prefix: '<a href="https://app.vetro.io/fibermap/" target="_blank">Vetro</a>' // Custom 
         }).addTo(map);
-
+ 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '@ Develop by JGN',
             maxZoom: 99
@@ -137,7 +137,7 @@
                                             var layerType = feature.properties.Layer || ''; // Adjust this path according to your GeoJSON structure
                                             return {
                                                 color: (layerType === 'Fiber (Lateral)') ? 'red' : 'orange',
-                                                weight: 6,
+                                                weight: 4,
                                                 opacity: 1,
                                                 zIndex: 0 
                                             };
@@ -293,19 +293,19 @@
             }
         }
 
-           var legend = L.control({ position: 'bottomright' });
+        var legend = L.control({ position: 'bottomright' });
 
-            legend.onAdd = function(map) {
-                var div = L.DomUtil.create('div', 'legend');
-                div.innerHTML += '<strong><span style="font-size: 20px;">Legend</strong><p>';
-                div.innerHTML += '<i class="circle" style="background: #a3f307"></i> Slackloop Pass<p>';
-                div.innerHTML += '<i class="circle" style="background: yellow"></i>Incorrect Slackloop Length<p>';
-                div.innerHTML += '<i class="circle" style="background: red"></i> Missing Slackloop<p>';
-                div.innerHTML += '<i class="circle" style="background: blue"></i> Duplicate Slackloop';
-                return div;
-            };
-    
-            legend.addTo(map);
+        legend.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'legend');
+            div.innerHTML += '<strong><span style="font-size: 20px;">Legend</strong><p>';
+            div.innerHTML += '<i class="circle" style="background: #a3f307"></i> Slackloop Pass<p>';
+            div.innerHTML += '<i class="circle" style="background: yellow"></i>Incorrect Slackloop Length<p>';
+            div.innerHTML += '<i class="circle" style="background: red"></i> Missing Slackloop<p>';
+            div.innerHTML += '<i class="circle" style="background: blue"></i> Duplicate Slackloop';
+            return div;
+        };
+
+        legend.addTo(map);
 
         processGeoJSON('geojsonInput1');
         processGeoJSON('geojsonInput2');
