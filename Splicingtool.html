@@ -265,7 +265,7 @@
                 <input type="file" id="geojsonInput3" accept=".geojson,application/json">
             </td>
             <td>
-                <a href="index.html">Slackloop tool</a>
+                <a href="slcktool.html">Slackloop tool</a>
             </td>
         </tr>
     </table> 
@@ -590,56 +590,173 @@
             };
         }
 
+        function mergeDRLines(lines) {
+            let pattern = /(.*DR-)(\d+)(.*)/;
+            let grouped = {};
+        
+            lines.forEach(line => {
+                let match = line.match(pattern);
+                if (match) {
+                    let prefix = match[1];
+                    let number = parseInt(match[2], 10);
+                    let suffix = match[3].replace(/\bF\d*\b/g, '').trim(); // Remove 'F' occurrences after DR-xxxx
+        
+                    let key = `${prefix}${suffix}`;
+                    if (!grouped[key]) grouped[key] = [];
+                    grouped[key].push(number);
+                } else {
+                    grouped[line] = line; // Keep non-matching lines as is
+                }
+            });
+        
+            return Object.entries(grouped)
+                .map(([key, values]) => {
+                    if (Array.isArray(values)) {
+                        values.sort((a, b) => a - b);
+                        let result = [];
+                        let temp = [values[0]];
+        
+                        for (let i = 1; i < values.length; i++) {
+                            if (values[i] === values[i - 1] + 1) {
+                                temp.push(values[i]);
+                            } else {
+                                result.push(
+                                    temp.length > 1
+                                        ? `${key.split("DR-")[0]}DR-${String(temp[0]).padStart(4, '0')} -> DR-${String(temp[temp.length - 1]).padStart(4, '0')}${key.split("DR-")[1].replace(/\d+/, '')}`
+                                        : `${key.split("DR-")[0]}DR-${String(temp[0]).padStart(4, '0')}`
+                                );
+                                temp = [values[i]];
+                            }
+                        }
+                        result.push(
+                            temp.length > 1
+                                ? `${key.split("DR-")[0]}DR-${String(temp[0]).padStart(4, '0')} -> DR-${String(temp[temp.length - 1]).padStart(4, '0')}${key.split("DR-")[1].replace(/\d+/, '')}`
+                                : `${key.split("DR-")[0]}DR-${String(temp[0]).padStart(4, '0')}`
+                        );
+        
+                        return result.join('<br>'); // Each group appears on a new line
+                    }
+                    return values;
+                })
+                .join('<br>');
+        }
+
+        function processLines(lines) {
+            let pattern = /(.*)F(\d+(-\d+)?)\sout\s(.*)F(\d+(-\d+)?)/;
+            let grouped = {};
+        
+            lines.forEach(line => {
+                let match = line.match(pattern);
+                if (match) {
+                    let prefix1 = match[1].trim();
+                    let number1 = match[2]; // Handles both single numbers and ranges (e.g., 25 or 28-38)
+                    let prefix2 = match[4].trim();
+                    let number2 = match[5];
+        
+                    let key = `${prefix1} F${number1} out ${prefix2}`;
+                    if (!grouped[key]) grouped[key] = [];
+                    
+                    // If it's a range (e.g., 28-38), store as is
+                    if (number2.includes('-')) {
+                        grouped[key].push(number2);
+                    } else {
+                        grouped[key].push(parseInt(number2, 10));
+                    }
+                } else {
+                    grouped[line] = line; // Keep non-matching lines as is
+                }
+            });
+        
+            return Object.entries(grouped)
+                .map(([key, values]) => {
+                    if (Array.isArray(values)) {
+                        values = values.map(v => (typeof v === "string" ? v : parseInt(v, 10)));
+                        values.sort((a, b) => (typeof a === "string" ? 1 : a - b));
+        
+                        let result = [];
+                        let temp = [values[0]];
+        
+                        for (let i = 1; i < values.length; i++) {
+                            if (
+                                typeof values[i] === "number" &&
+                                typeof values[i - 1] === "number" &&
+                                values[i] === values[i - 1] + 1
+                            ) {
+                                temp.push(values[i]);
+                            } else {
+                                result.push(
+                                    temp.length > 1
+                                        ? `F${temp[0]}-F${temp[temp.length - 1]}`
+                                        : `F${temp[0]}`
+                                );
+                                temp = [values[i]];
+                            }
+                        }
+                        result.push(
+                            temp.length > 1
+                                ? `F${temp[0]}-F${temp[temp.length - 1]}`
+                                : `F${temp[0]}`
+                        );
+        
+                        return `${key} ${result.join('<br>')}`;
+                    }
+                    return values;
+                })
+                .join('<br>');
+        }
+        
+  
+             
+        
         function generatePopupContent(feature, firstGeoJsonProperties) {
             const properties = feature.properties;
-            const fondID = feature.properties.Spec || 'null';
-            const Handhole = feature.properties.ID;
-            const equipmentType = feature.properties.Equipment;
-            const hubName = firstGeoJsonProperties.hubName ? firstGeoJsonProperties.hubName : "";
-            const connections = firstGeoJsonProperties.connections ? firstGeoJsonProperties.connections.split(', ').map(part => part.trim()).join('<br>')  : "";
-            const hubb = firstGeoJsonProperties.hubb ? firstGeoJsonProperties.hubb : "";
-            const conn = firstGeoJsonProperties.conn ? firstGeoJsonProperties.conn.split(', ').map(part => part.trim()).join('<br>')  : "";
-            const hubbb = firstGeoJsonProperties.hubbb ? firstGeoJsonProperties.hubbb : "";
-            const connn = firstGeoJsonProperties.connn ? firstGeoJsonProperties.connn.split(', ').map(part => part.trim()).join('<br>')  : "";
-
-            let page1Content = '';
-            let page2Content = '';
-            let page3Content = '';
-
-            if (fondID==="null") {
-                page1Content = '';
-                page2Content = '';
-                page3Content = '';
-            } else {
-                page1Content = `<div class="page-header">${Handhole}</div>
-                                <div class="page-body">                                  
-                                    <p><strong>Hub:${hubName}</strong></p>
-                                    <p><strong>Splicing:</strong><br>${connections}</br></p>
-                                </div>`;
-                page2Content = `<div class="page-header">${Handhole}</div>
-                                <div class="page-body">
-                                   <p><strong>Hub:${hubb}</strong></p>
-                                    <p><strong>Splicing:</strong><br>${conn}</br></p>
-                                </div>`;
-                page3Content = `<div class="page-header">${Handhole}</div>
-                                <div class="page-body">
-                                    <p><strong>Hub:${hubbb}</strong></p>
-                                    <p><strong>Splicing:</strong><br>${connn}</br></p>
-                                </div>`;
+            const fondID = properties.Spec || 'null';
+            const Handhole = properties.ID;
+            const hubName = firstGeoJsonProperties.hubName || "";
+            const connections = firstGeoJsonProperties.connections || "";
+            const hubb = firstGeoJsonProperties.hubb || "";
+            const conn = firstGeoJsonProperties.conn || "";
+            const hubbb = firstGeoJsonProperties.hubbb || "";
+            const connn = firstGeoJsonProperties.connn || "";
+        
+            function processData(data) {
+                let separator = data.includes(', ') ? ', ' : '\n';
+                let lines = data.split(separator);
+            
+                if (data.includes("DR")) {
+                    return mergeDRLines(lines);
+                } else {
+                    return processLines(lines);
+                }
             }
-
-            const content = `
+        
+            const page1Content = fondID !== "null" ? `
+                <div class="page-header">${Handhole}</div>
+                <div class="page-body">
+                    <p><strong>Hub:</strong> ${hubName}</p>
+                    <p><strong>Splicing:</strong><br>${processData(connections)}</p>
+                </div>` : "";
+        
+            const page2Content = fondID !== "null" ? `
+                <div class="page-header">${Handhole}</div>
+                <div class="page-body">
+                    <p><strong>Hub:</strong> ${hubb}</p>
+                    <p><strong>Splicing:</strong><br>${processData(conn)}</p>
+                </div>` : "";
+        
+            const page3Content = fondID !== "null" ? `
+                <div class="page-header">${Handhole}</div>
+                <div class="page-body">
+                    <p><strong>Hub:</strong> ${hubbb}</p>
+                    <p><strong>Splicing:</strong><br>${processData(connn)}</p>
+                </div>` : "";
+        
+            return `
                 <div class="popup-container">
                     <div class="page-content">
-                        <div id="page1" class="page active">
-                            ${page1Content}
-                        </div>
-                        <div id="page2" class="page">
-                            ${page2Content}
-                        </div>
-                        <div id="page3" class="page">
-                            ${page3Content}
-                        </div>
+                        <div id="page1" class="page active">${page1Content}</div>
+                        <div id="page2" class="page">${page2Content}</div>
+                        <div id="page3" class="page">${page3Content}</div>
                     </div>
                     <div class="nav-buttons">
                         <button data-page="page1">1</button>
@@ -648,10 +765,13 @@
                     </div>
                 </div>
             `;
-
-            return content;
         }
+        
+        
+        
 
+        
+        
         function createLegend() {
             const legend = L.control({ position: 'bottomright' });
 
