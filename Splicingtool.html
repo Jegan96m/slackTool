@@ -61,52 +61,105 @@
             box-shadow: 0 0 10px rgb(255, 255, 0,1); /* Outer shadow for additional ring effect */
             
         }
+        
         .leaflet-popup-content {
             display: flex;
+            flex-direction: column;
+            resize: both; /* Allow both horizontal and vertical resizing*/
+            max-height: 500px;
+            max-width: 2000px;
+            min-height: 400px;
+            min-width: 2000px;
+            overflow: auto; /* Ensures scrolling when content overflows*/ 
+        }
+        
+        /*
+        .leaflet-popup-content {
+            display: flex;
+            flex-direction: column;
             resize: horizontal;
             max-height: 300px;
             overflow: auto;
+            width: auto; /* Let it expand with resizing 
+            min-width: 100px; /* Prevent it from becoming too small 
         }
+       */
+                
+        /* Make sure popup wrapper follows the same min/max dimensions */
         .leaflet-popup-content-wrapper {
             white-space: nowrap; /* Prevent line breaks */
-            width: auto; /* Let the content dictate the width */ 
-            overflow-x: auto;          
+            width: auto; /* Let the content dictate the width */
+            overflow-x: auto;
+            min-height: 400px;
+            min-width: 600px;
+            max-height: 500px;
+            max-width: 800px;
         }
 
+        /* Ensure popup container follows the same sizing */
         .popup-container {
             display: flex;
             flex-direction: column;
             height: 100%;
+            min-width: 2000px;
+            min-height: 400px;
+            max-height: 8000px;
+            max-width: 8000px;
         }
+
+        /* Page content inside the popup */
         .page-content {
             flex: 1;
             overflow: auto;
             font-family: Arial, sans-serif;
             color: #333;
+            min-width: 2000px;
+            min-height: 400px;
+            max-height: 8000px;
+            max-width: 8000px;
         }
+
+        /* Individual pages in the popup */
         .page {
             display: none;
+            min-width: 2000px;
+            min-height: 400px;
+            max-height: 8000px;
+            max-width: 8000px;
         }
+
+        /* Active page */
         .page.active {
             display: block;
         }
+
+        /* Page header */
         .page-header {
-            padding: 10px;
+            width: 100%; /* Make sure it stretches */
             background-color: #f4f4f4;
             border-bottom: 1px solid #ddd;
             font-weight: bold;
             font-size: 16px;
+            padding: 10px;
+            box-sizing: border-box; /* Ensures padding doesn’t increase width */
+            flex-shrink: 0; /* Prevent shrinking */
         }
+
+        /* Page body */
         .page-body {
             padding: 10px;
             font-size: 14px;
+           
         }
+
+        /* Prevent text from breaking inside page body */
         .page-body p {
             white-space: nowrap; /* Prevent line breaks */
             overflow: hidden;
             text-overflow: ellipsis; /* Add '...' if the text overflows */
         }
 
+        /* Navigation buttons */
         .nav-buttons {
             display: flex;
             flex-direction: row;
@@ -115,7 +168,11 @@
             border-top: 1px solid #ddd;
             background-color: #f4f4f4;
             box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.1);
+            min-width: 600px;
+            max-width: 800px;
         }
+
+        /* Button styling */
         .nav-buttons button {
             margin: 2px 0;
             padding: 5px 10px;
@@ -124,6 +181,8 @@
             cursor: pointer;
             font-size: 10px;
         }
+
+        /* Active button styling */
         .nav-buttons button.active {
             background-color: #ddd;
             border-color: #ccc;
@@ -161,6 +220,273 @@
                         0 0 20px #0000FF;
         }
 
+        /*splitter css */
+        .page5-container {
+            display: flex;
+            justify-content: flex-start; /* Align content to the left */
+            align-items: flex-start; /* Align content to the left */
+            gap: 30px;
+        }
+        
+        .splitter-sections {
+            display: flex;
+            flex-direction: column; /* Stack splitters vertically */
+            gap: 10px; /* Space between sections */
+            width: auto; /* Adjust as needed */
+        }
+        
+        .splitter-section {
+            background-color: #ffffff;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: auto;
+        }
+        
+        .clickable-box {
+            padding: 5px;
+            margin: 2px 0; /* Space between boxes */
+            background-color: #007bff;
+            color: white;
+            border-radius: 1px;
+            cursor: pointer;
+            display: block; /* Ensure vertical stacking */
+            width: 150px; /* Adjust width as needed */
+            font-size: 12px; /* Adjust font size as needed */
+            text-align: left;
+        }
+        
+        .clickable-box.primary {
+            background-color: #28a745;
+            font-size: 12px;
+            width: 120px;
+        }
+        
+        .clickable-box.secondary {
+            background-color: #dc3545;
+            font-size: 12px;
+            width: 130px;
+        }
+        
+        .splitter-container {
+            position: relative;
+            display: flex;
+            flex-direction: column; /* Force vertical stacking */
+            align-items: flex-start; /* Align items to the left */
+            gap: 5px; /* Add space between items */
+            margin-top: 10px; /* Add space between sections */
+        }
+
+        /* Splitter diagram (right side) */
+         .splitter {
+            position: relative;
+            width: 150px;
+            height: 200px;
+            background-color: #007bff;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            padding: 10px 0;
+            margin-left: 150px; /* Add space between splitters */
+            margin-top: 50px;
+            z-index: 20;
+        }
+        
+        .input-port, .output-port {
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20%;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            position: absolute;
+            
+        }
+        
+        /* Positioning the input port to be attached on the left */
+        .input-port {
+            left: -30px;
+            width: 35px; /* Slightly larger to ensure full attachment */
+            height: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+        /* Positioning output ports to be attached to the right */
+        /* Style the output ports */
+        .output-port {
+            position: absolute;
+            right: -30px;
+            width: 35px; /* Ensures full attachment */
+            height: 20px;
+            background-color: #40da12;
+            color: white;
+            z-index: 1;
+          
+        }
+
+        /* Add straight lines beside each output port */
+        .output-port::after {
+            content: "";
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            width: 30px; /* Length of the line */
+            height: 2px;
+            background-color: blue;
+            transform: translateY(-50%);
+        }
+        /* Add straight lines beside each input port */
+        .input-port::after {
+            content: "";
+            position: absolute;
+            right: 100%;
+            top: 50%;
+            width: 30px; /* Length of the line */
+            height: 2px;
+            background-color: blue;
+            transform: translateY(-50%);
+        }
+
+        #port1 { top: 5%; }
+        #port2 { top: 17%; }
+        #port3 { top: 29%; }
+        #port4 { top: 40%; }
+        #port5 { top: 52%; }
+        #port6 { top: 64%; }
+        #port7 { top: 75%; }
+        #port8 { top: 87%; }
+
+        .splitter-small {
+            width: 100px;
+            height: 100px;
+            background-color: #007bff;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            padding: 10px 0;
+            margin-left: 180px; /* Add space between splitters */ /* Shorter for 1:4 */
+            margin-top: 100px;
+        }
+
+        .splitter-small.input-port, .splitter-small.output-port {
+            width: 40px;
+            height: 40px;
+            background-color: rgb(60, 255, 0);
+            color: rgb(255, 255, 255);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20%;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            position: absolute;
+        }
+        
+        /* Positioning the input port to be attached on the left */
+        .splitter-small.input-port {
+            left: -200px;
+            width: 30px; /* Slightly larger to ensure full attachment */
+            height: 10px;
+            top: -30%;
+            transform: translateY(-50%);
+        }
+        /* Positioning output ports to be attached to the right */
+        .splitter-small.output-port {
+            position: absolute;
+            right: -20px;
+            width: 30px; /* Ensures full attachment */
+            height: 3px;
+            background-color: #40da12;
+            color: rgb(255, 255, 255);
+            margin-top: -5%;
+        }
+
+       /* Adjusted positions for 1:4 splitter */
+        .splitter-small #portt1 { top: 8%; }
+        .splitter-small #portt2 { top: 32%; }
+        .splitter-small #portt3 { top: 55%; }
+        .splitter-small #portt4 { top: 80%; }
+
+        
+        #splitterTitle {
+            font-size: 10px; /* Adjust size as needed */
+            font-weight: bold; /* Optional: Keep it bold */
+            text-align: center; /* Center align */
+            margin-bottom: 5px; /* Add some spacing */
+        }
+
+        #splitterTitle-small {
+            font-size: 10px; /* Adjust size as needed */
+            font-weight: bold; /* Optional: Keep it bold */
+            text-align: center; /* Center align */
+            margin-bottom: 5px
+        }
+        
+        /* Container for the output list */
+.output-list8 {
+    position: relative;
+    margin-top: -200px;
+    margin-left: 340px;        
+}
+.output-list4 {
+    position: relative;
+    margin-top: -115px;
+    margin-left: 310px;  
+}
+
+
+/* Style for individual output items */
+.output-item {
+    position:absolute;
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    white-space: nowrap;   
+}
+.output-itemm {
+    position:absolute;
+    font-size: 12px;
+    font-weight: bold;
+    color: #333;
+    white-space: nowrap;    
+}
+
+/* Output items for 1:8 splitter */
+.output-item-1 { top: -13px;  }
+.output-item-2 { top: 11px; }
+.output-item-3 { top: 38px; }
+.output-item-4 { top: 63px; }
+.output-item-5 { top: 88px; }
+.output-item-6 { top: 115px; }
+.output-item-7 { top: 140px; }
+.output-item-8 { top: 167px; }
+/* Output items for 1:4 splitter */
+.output-itemm-1 { top: -4.5px;  }
+.output-itemm-2 { top: 22px; }
+.output-itemm-3 { top: 50px; }
+.output-itemm-4 { top: 81px; }
+            
+        /*them toggle css*/
         .theme-toggle {
             position: absolute;
             top: 10px;
@@ -245,6 +571,124 @@
             background: #333;
         }
 
+/*for fiber display*/
+.container-fiber {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid black;
+    padding: 20px;
+    border-radius: 5px;
+    width: 400px;
+    position: relative;
+    z-index: 1;
+    background: #f9f9f9; /* Light background for visibility */
+}
+
+.selectors-fiber {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 10px;
+}
+
+select {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+}
+
+/* Fiber Sections */
+.fiber-sections {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+    gap: 20px;
+}
+
+/* Fiber Lists */
+.fiber-section {
+    width: 45%;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fff;
+    padding: 10px;
+    min-height: 100px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.fiber-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto; /* Enables scrolling for large lists */
+    display: block !important; /* Ensure visibility */
+}
+
+.fiber-list li {
+    padding: 8px;
+    margin: 4px 0;
+    background: #007bff;
+    color: white;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.fiber-list li:hover {
+    background: #0056b3;
+}
+
+/* Ensuring Left & Right Lists Are Visible */
+.fiber-list.left {
+    text-align: left;
+}
+
+.fiber-list.right {
+    text-align: right;
+}
+
+/* SVG Connector (For Cable Connection Visualization) */
+.svg-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.fiber-connection {
+    fill: none;
+    stroke: rgba(11, 236, 30, 0.849);
+    stroke-width: 2;
+}
+#fiberVisualization {
+    font-family: Arial, sans-serif;
+    margin-top: 20px;
+}
+
+#hubFiberList {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.fiber-chip {
+    display: inline-block;
+    background-color: #e0f0ff;
+    color: #0077cc;
+    border-radius: 12px;
+    padding: 4px 10px;
+    margin: 2px;
+    font-size: 14px;
+}
 
 
     </style>
@@ -364,9 +808,9 @@
                                 // Add a permanent label displaying the fondid below the line
                                 if (feature.properties.FondID) {
                                     layer.bindTooltip(`ID: ${feature.properties.ID}, FondID: ${feature.properties.FondID}`, {
-                                        permanent: true,
+                                        permanent: false,
                                         direction: 'bottom',
-                                        offset: [2, 7],  // Adjust offset to ensure visibility below the line
+                                        offset: [5, 10],  // Adjust offset to ensure visibility below the line
                                         className: 'leaflet-tooltip'
                                     }).openTooltip();
                                 }
@@ -703,74 +1147,554 @@
                     return values;
                 })
                 .join('<br>');
+        }    
+        function findInputPSCables(lines) {
+            let pattern = /In\s(.*?)\s(F\d+)\sPSsplit\s(.*?)\sF\d+/;
+            let inputCables = new Set();
+        
+            lines.forEach(line => {
+                let match = line.match(pattern);
+                if (match) {
+                    let sourceCable = `${match[1].trim()} ${match[2]}`; // Include F#
+                    inputCables.add(sourceCable);
+                }
+            });
+        
+            return Array.from(inputCables); // Return unique cables as an array
         }
+        function findInputSSCables(lines) {
+            let pattern = /In\s(.*?)\s(F\d+)\sSSsplit\s(.*?)\sF\d+/;
+            let inputCables = new Set();
         
-  
-             
+            lines.forEach(line => {
+                let match = line.match(pattern);
+                if (match) {
+                    let sourceCable = `${match[1].trim()} ${match[2]}`; // Include F#
+                    inputCables.add(sourceCable);
+                }
+            });
         
+            return Array.from(inputCables); // Return unique cables as an array
+        }
+        function findOutputPSplit(lines) {
+            let pattern = /PSsplit\s(.*?F\d+)/;
+
+            let valuesAfterSSSplit = [];
+            let groupedValues = [];
+            let currentGroup = [];
+        
+            lines.forEach(line => {
+                let match = line.match(pattern);
+                if (match) {
+                    let value = match[1].trim();
+                    currentGroup.push(value);
+                    
+                    // Move to the next group if "SS-SS#" is encountered or group size reaches 3
+                    if (/^SS-SS\d+$/.test(value) || currentGroup.length === 8) {
+                        groupedValues.push(currentGroup);
+                        currentGroup = [];
+                    }
+                }
+            });
+        
+            // Push the last group if it has remaining elements
+            if (currentGroup.length > 0) {
+                groupedValues.push(currentGroup);
+            }
+        
+            return groupedValues;
+        }
+        function findOutputSSplit(lines) {
+            let pattern = /SSsplit\s(.*?)\sF\d+/;
+            let valuesAfterSSSplit = [];
+            let groupedValues = [];
+            let currentGroup = [];
+        
+            lines.forEach(line => {
+                let match = line.match(pattern);
+                if (match) {
+                    let value = match[1].trim();
+                    currentGroup.push(value);
+                    
+                    // Move to the next group if "SS-SS#" is encountered or group size reaches 3
+                    if (/^SS-SS\d+$/.test(value) || currentGroup.length === 4) {
+                        groupedValues.push(currentGroup);
+                        currentGroup = [];
+                    }
+                }
+            });
+        
+            // Push the last group if it has remaining elements
+            if (currentGroup.length > 0) {
+                groupedValues.push(currentGroup);
+            }
+        
+            return groupedValues;
+        }
+        function findInputCables(lines) {
+            let pattern = /In\s(.*?)\sF\d+\s(SSsplit|express|splice)\s(.*?)\sF\d+/;
+            let inputCables = new Set();
+
+            lines.forEach(line => {
+                let match = line.match(pattern);
+                if (match) {
+                    let sourceCable = `${match[1].trim()}`; // Only take the cable identifier without F#
+                    inputCables.add(sourceCable);
+                }
+            });
+
+            return Array.from(inputCables); // Return unique cables as an array
+        }
+        function findOutputCables(lines) {
+            let outputCables = new Set();
+
+            lines.forEach(line => {
+                let combined = line.split(' ').join(' '); // Join all parts into a single string
+                outputCables.add(combined);
+            });
+        
+            return Array.from(outputCables);
+        }     
+        function findOutputtCables(lines) {
+            let outputtCables = new Set();
+        
+            lines.forEach(line => {
+                // Assuming each line already has the desired data in a simple format
+                // Split the line into parts and extract relevant information
+                let parts = line.split(' '); // Or use another delimiter based on your data format
+                let sourceCable = `${parts[5]}`; // Adjust based on data format
+        
+                outputtCables.add(sourceCable);
+            });
+        
+            return Array.from(outputtCables); // Return unique cables as an array
+        }                    
+                     
         function generatePopupContent(feature, firstGeoJsonProperties) {
+            // First GeoJSON properties
             const properties = feature.properties;
-            const fondID = properties.Spec || 'null';
+            const fondID = properties.Spec || "";
             const Handhole = properties.ID;
+            const primary = properties["# of Primary Splitters"] || "";
+            const secondary = properties["# of Secondary Splitters"] || "";
             const hubName = firstGeoJsonProperties.hubName || "";
             const connections = firstGeoJsonProperties.connections || "";
             const hubb = firstGeoJsonProperties.hubb || "";
             const conn = firstGeoJsonProperties.conn || "";
             const hubbb = firstGeoJsonProperties.hubbb || "";
-            const connn = firstGeoJsonProperties.connn || "";
+            const connn = firstGeoJsonProperties.connn || "";           
         
             function processData(data) {
                 let separator = data.includes(', ') ? ', ' : '\n';
                 let lines = data.split(separator);
             
-                if (data.includes("DR")) {
-                    return mergeDRLines(lines);
-                } else {
+                
                     return processLines(lines);
+                
+            }
+            function processInputPSCablesData(data) {
+                let separator = data.includes(', ') ? ', ' : '\n';
+                let lines = data.split(separator);
+            
+                return findInputPSCables(lines);
+            }
+            function processInputSSCablesData(data) {
+                let separator = data.includes(', ') ? ', ' : '\n';
+                let lines = data.split(separator);
+            
+                return findInputSSCables(lines);
+            }            
+            /*let lines = [
+                "In NAV1-06-FOC06 F1 PS split NAV1-06-05-01-FOC01 F1",
+                "In NAV1-06-FOC06 F2 PS split NAV1-06-05-01-FOC01 F9",
+                "In NAV1-06-FOC06 F3 PS split NAV1-06-05-01-FOC01 F10"
+            ];
+
+            let inputPSCables = findInputCables(lines); // ✅ Now it's dynamic
+            console.log(inputPSCables); */
+            function processOutputPSCablesData(data) {
+                let separator = data.includes(', ') ? ', ' : '\n';
+                let lines = data.split(separator);
+            
+                return findOutputPSplit(lines);
+            }
+            function processOutputSSCablesData(data) {
+                let separator = data.includes(', ') ? ', ' : '\n';
+                let lines = data.split(separator);
+            
+                return findOutputSSplit(lines);
+            } 
+
+            // Function to process fiber data
+            function processInputCablesData(data) {
+                let separator = data.includes(', ') ? ', ' : '\n';
+                let lines = data.split(separator);
+            
+                return findInputCables(lines);
+            } 
+            function processOutputCablesData(data) {
+                let separator = data.includes(', ') ? ', ' : '\n';
+                let lines = data.split(separator);
+            
+                return findOutputCables(lines);
+            } 
+            function processOutputtCablesData(data) {
+                let separator = data.includes(', ') ? ', ' : '\n';
+                let lines = data.split(separator);
+            
+                return findOutputtCables(lines);
+            }
+            
+
+            // Generate pages dynamically
+            let pages = [];
+            let buttons = [];
+
+            function addPage(id, content) {
+                if (content) {
+                    let isActive = pages.length === 0 ? "active" : "";
+                    pages.push(`<div id="${id}" class="page ${isActive}">${content}</div>`);
+                    buttons.push(`<button data-page="${id}">${buttons.length + 1}</button>`);
                 }
             }
-        
-            const page1Content = fondID !== "null" ? `
-                <div class="page-header">${Handhole}</div>
-                <div class="page-body">
-                    <p><strong>Hub:</strong> ${hubName}</p>
-                    <p><strong>Splicing:</strong><br>${processData(connections)}</p>
-                </div>` : "";
-        
-            const page2Content = fondID !== "null" ? `
-                <div class="page-header">${Handhole}</div>
-                <div class="page-body">
-                    <p><strong>Hub:</strong> ${hubb}</p>
-                    <p><strong>Splicing:</strong><br>${processData(conn)}</p>
-                </div>` : "";
-        
-            const page3Content = fondID !== "null" ? `
-                <div class="page-header">${Handhole}</div>
-                <div class="page-body">
-                    <p><strong>Hub:</strong> ${hubbb}</p>
-                    <p><strong>Splicing:</strong><br>${processData(connn)}</p>
-                </div>` : "";
-        
+
+            // Create page6Content and append page1 content
+            function formatOutputCables(data) {
+                if (!data) return "No output cables found.";
+
+                const lines = data.trim().split(/<br\s*\/?>/);
+                let html = "";
+
+                lines.forEach(line => {
+                    if (!line.trim()) return; // skip empty lines
+
+                    const parts = line.trim().split(" ");
+                    if (parts.length < 6) return;
+
+                    const leftCable = parts[1];
+                    const leftFiber = parts[2];
+                    const type = parts[3];
+                    const rightCable = parts[4];
+                    const rightFiber = parts[5];
+
+                    html += `• ${leftCable} ${leftFiber} ${type} ${rightCable} ${rightFiber}<br>`;
+                });
+
+                return html || "No valid output cables found.";
+            }
+
+
+            function getAlignedFiberPairs(data) {
+                if (!data) return "No connections found.";
+
+                const lines = data.trim().split(/<br\s*\/?>/);
+                const groupMap = {};
+
+                lines.forEach(line => {
+                    if (!line.trim()) return;
+
+                    const parts = line.trim().split(" ");
+                    if (parts.length < 6) return;
+
+                    const leftCable = parts[1];
+                    let leftFiber = parts[2];
+                    const type = parts[3];
+                    const rightCable = parts[4];
+                    const rightFiber = parts[5];
+
+                    // Only process if type is one of the allowed ones
+                    if (!["splice", "express", "PSsplit", "SSsplit"].includes(type)) return;
+
+                    // Append label to left fiber if needed
+                    if (type === "PSsplit") {
+                        leftFiber = `${leftFiber} <span style="color: green;">(primary)</span>`;
+                    } else if (type === "SSsplit") {
+                        leftFiber = `${leftFiber} <span style="color: red;">(secondary)</span>`;
+                    }
+
+                    // Determine grouping key based on type
+                    const groupKey = (type === "PSsplit" || type === "SSsplit")
+                        ? `${leftCable}__` // only left cable
+                        : `${leftCable}__${rightCable}`; // both cables for splice/express
+
+                    if (!groupMap[groupKey]) {
+                        groupMap[groupKey] = {
+                            leftCable,
+                            rightCable: (type === "splice" || type === "express") ? rightCable : null,
+                            type,
+                            pairs: [],
+                            seenLeftFibers: new Set()
+                        };
+                    }
+
+                    // Add the pair
+                    if (!groupMap[groupKey].seenLeftFibers.has(leftFiber)) {
+                        groupMap[groupKey].pairs.push({
+                            left: `${leftFiber}`,
+                            right: (type === "splice" || type === "express") ? `${rightFiber}` : ``
+                        });
+                        groupMap[groupKey].seenLeftFibers.add(leftFiber);
+                    } else {
+                        groupMap[groupKey].pairs.push({
+                            left: ``,
+                            right: (type === "splice" || type === "express") ? `${rightFiber}` : ``
+                        });
+                    }
+                });
+
+                if (Object.keys(groupMap).length === 0) return "No valid connections found.";
+
+                let result = "";
+
+                for (const group of Object.values(groupMap)) {
+                    const isSplit = (group.type === "PSsplit" || group.type === "SSsplit");
+
+                    result += `
+                    <div style="margin-bottom: 20px; border: 1px solid #ccc; padding: 10px; border-radius: 8px;">
+                        <div style="display: flex; font-weight: bold; margin-bottom: 5px;">
+                            <div style="width: 20%; text-align: center;">${group.leftCable}</div>
+                            <div style="width: 5%; text-align: center;"></div>
+                            <div style="width: 20%; text-align: center;">${isSplit ? "" : group.rightCable}</div>
+                        </div>
+                    `;
+
+                    group.pairs.forEach(pair => {
+                        result += `
+                        <div style="display: flex; align-items: center;">
+                            <div style="width: 20%; text-align: center;">${pair.left}</div>
+                            <div style="width: 5%; text-align: center; color: Blue; font-weight: bold; transform: scaleX(2);">
+                                ${isSplit ? "" : "→"}
+                            </div>
+                            <div style="width: 20%; text-align: center;">${isSplit ? "" : pair.right}</div>
+                        </div>`;
+                    });
+
+                    result += `</div>`;
+                }
+
+                return result;
+            }
+
+            let outputCablesRaw = processData(connections);
+
+            if (conn && conn.length > 0) {
+                const additionalData = processData(conn);
+                if (additionalData) {
+                    outputCablesRaw += `<br>${additionalData}`;
+                }
+            }
+
+            let formattedOutputCables = formatOutputCables(outputCablesRaw);
+
+            // Create content for page 6 with a container for both incoming and outgoing cables
+            let page6Content = `
+            <div class="page-header">${Handhole}</div>
+            <div class="page-body">
+                <!-- Combined Cables Container -->
+                <div class="cables-container" style="display: flex; justify-content: space-between; margin-top: 1px; position: relative; padding: 5px;">
+                    
+                    <!-- Combined box with Incoming on left, Outgoing on right -->
+                    <div style="display: flex; width: 50%; justify-content: space-between;">
+                        
+                        <div class="outgoing-cables" style="width: 80%;">
+                            <p style="margin-top: -5px;"><strong>Fiber Connections:</strong><br>${getAlignedFiberPairs(formattedOutputCables)}</p>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>`;
+
+            if (page6Content) {
+                addPage("page6", page6Content);
+            }
+
+
+                // Function to extract the first three segments of Handhole ID
+                function formatHandhole(handhole) {
+                    const parts = handhole.split("-");
+                    if (parts.length >= 3) {
+                        return parts.slice(0, 3).join("-");
+                    }
+                    return handhole;
+                }
+                
+                // Define handleClick globally
+                window.handleClick = function (handhole, inputPSCable = "", inputSSCable = "", outputCables = []) {
+                    let splitterContainer8 = document.getElementById("splitterDiagram8"); // 1:8 Splitter Container
+                    let splitterContainer4 = document.getElementById("splitterDiagram4"); // 1:4 Splitter Container
+                    let splitterTitle8 = document.getElementById("splitterTitle8"); // 1:8 Splitter Title
+                    let splitterTitle4 = document.getElementById("splitterTitle4"); // 1:4 Splitter Title
+                    let inputPort8 = document.getElementById("inputPort8"); // Input port for 1:8
+                    let inputPort4 = document.getElementById("inputPort4"); // Input port for 1:4
+                    let outputList8 = document.getElementById("outputList8"); // New output list container for 1:8
+                    let outputList4 = document.getElementById("outputList4"); // New output list container for 1:4
+                
+                    // Hide both splitters first
+                    splitterContainer8.style.display = "none";
+                    splitterContainer4.style.display = "none";
+                
+                    // Clear previous output lists
+                    outputList8.innerHTML = "";
+                    outputList4.innerHTML = "";
+                
+                    if (handhole.includes("G5NS")) {
+                        // Show Primary Splitter (1:8)
+                        splitterContainer8.style.display = "block";
+                        splitterTitle8.textContent = "Primary Splitter - " + handhole;
+                        inputPort8.innerHTML = `<span style="color: black; font-weight: bold;font-size: 12px;position: relative; left: -80px;margin-top: -12px">${inputPSCable}</span>`; // Show input cable name
+                
+                        splitterTitle8.classList.remove("small");
+                        splitterTitle4.textContent = ""; // Clear Secondary Splitter title
+                
+                        // Display Output Cables outside the box
+                        outputCables.forEach((cable, index) => {
+                            let outputItem = document.createElement("div");
+                            outputItem.textContent = ` ${cable}`;
+                            outputItem.className = `output-item output-item-${index + 1}`; 
+                            outputList8.appendChild(outputItem);
+                        });
+                    } else {
+                        // Show Secondary Splitter (1:4)
+                        splitterContainer4.style.display = "block";
+                        splitterTitle4.textContent = "Secondary Splitter - " + handhole;
+                        inputPort4.innerHTML = `<span style="color: black; font-weight: bold;font-size: 12px;position: relative; left: -95px;margin-top: -12px">${inputSSCable}</span>`; // Show input cable name
+                
+                        splitterTitle4.classList.add("small");
+                        splitterTitle8.textContent = ""; // Clear Primary Splitter title
+                
+                        // Display Output Cables outside the box
+                        outputCables.forEach((cable, index) => {
+                            let outputItem = document.createElement("div");
+                            outputItem.textContent = `${cable}`;
+                            outputItem.className = `output-item output-itemm-${index + 1}`; 
+                           // outputItem.style.marginTop = `${marginTopValue}%`; // Custom margin for each output
+                            outputList4.appendChild(outputItem);
+                        });
+                    }
+                
+                    console.log("Clicked:", handhole);
+                    console.log("Input PS Cable:", inputPSCable);
+                    console.log("Input SS Cable:", inputSSCable);
+                    console.log("Output Cables:", outputCables);
+                };
+                
+                
+                let page5Content = "";
+                
+                const primaryCount = parseInt(primary, 10);
+                const secondaryCount = parseInt(secondary, 10);
+                const formattedHandhole = Handhole.split("-").slice(0, 3).join("-");
+                
+                let handholeParts = Handhole.split("-");
+                if (handholeParts[handholeParts.length - 1] === "HH") {
+                    handholeParts.pop();
+                }
+                const formathhHandhole = handholeParts.join("-");
+                
+                if ((!isNaN(primaryCount) && primaryCount > 0) || (!isNaN(secondaryCount) && secondaryCount > 0)) {
+                    page5Content = `<div class="page-header">${Handhole}</div>
+                                    <div class="page5-container">  
+                                        <div class="splitter-sections">`;
+                
+                    // Define input cables for each primary splitter
+                    let inputPSCables = processInputPSCablesData(connections);// Add more if needed
+                    let outputPSCables = processOutputPSCablesData(connections);
+                
+                    if (!isNaN(primaryCount) && primaryCount > 0) {
+                        page5Content += `<div class="splitter-section">
+                                            <h3>Primary Splitters</h3>
+                                            <div class="splitter-container">`;
+                
+                        for (let i = 1; i <= primaryCount; i++) {
+                            let inputPSCable = inputPSCables[i - 1] || `Unknown Cable ${i}`;
+                            let outputCables = outputPSCables[i - 1] || []; // Get corresponding output cables
+                            page5Content += `
+                                <div class="clickable-box primary"
+                                     onclick='handleClick("${formattedHandhole}-G5NS (${i})", "${inputPSCable}", "", ${JSON.stringify(outputCables)})'>
+                                    ${formattedHandhole}-G5NS (${i})
+                                </div>`;
+                        }
+                
+                        page5Content += `</div></div>`;
+                    }
+                
+                    // Define input cables for each secondary splitter
+                    let inputSSCables = processInputSSCablesData(connections);
+
+                        if (!inputSSCables || inputSSCables.length === 0) {
+                            inputSSCables = processInputSSCablesData(conn);
+                        }
+
+                     // Add more if needed
+                    let outputSSCables = processOutputSSCablesData(connections);
+                    if (!outputSSCables || outputSSCables.length === 0) {
+                        outputSSCables = processOutputSSCablesData(conn);
+                    }
+                
+                    if (!isNaN(secondaryCount) && secondaryCount > 0) {
+                        page5Content += `<div class="splitter-section">
+                                            <h3>Secondary Splitters</h3>
+                                            <div class="splitter-container">`;
+                
+                        for (let i = 1; i <= secondaryCount; i++) {
+                            let inputSSCable = inputSSCables[i - 1] || `Unknown Cable ${i}`;
+                            let outputCables = outputSSCables[i - 1] || []; // Get corresponding output cables
+                            page5Content += `
+                                <button class="clickable-box secondary"
+                                        onclick='handleClick("${formathhHandhole} (${i})", "", "${inputSSCable}", ${JSON.stringify(outputCables)})'>
+                                    ${formathhHandhole} (${i})
+                                </button>`;
+                        }
+                
+                        page5Content += `</div></div>`;
+                    }
+                
+                    page5Content += `</div>  
+                        <div id="splitterDiagram8" class="splitter-container" style="display: none;">
+                            <div id="splitterTitle8">1:8 Splitter</div>
+                            <div class="splitter">
+                                <div class="input-port" id="inputPort8">IN</div>
+                                ${[...Array(8)].map((_, i) => `<div class="output-port" output-item-${i + 1}" id="port${i + 1}">${i + 1}</div>`).join('')}
+                            </div>
+                            <div id="outputList8" class="output-list8"></div>  <!-- New container for output cables -->
+                        </div>
+
+                        <div id="splitterDiagram4" class="splitter-container" style="display: none;">
+                            <div id="splitterTitle4">1:4 Splitter</div>
+                            <div class="splitter-small">
+                                <div class="input-port" id="inputPort4">IN</div>
+                                ${[...Array(4)].map((_, i) => `<div class="splitter-small output-port output-itemm-${i + 1}" id="portt${i + 1}">${i + 1}</div>`).join('')}
+                            </div>
+                            <div id="outputList4" class="output-list4"></div>  <!-- New container for output cables -->
+                        </div>
+
+                    </div>`;
+                }
+                
+                // Add Page 5 only if it has content
+                if (page5Content) {
+                    addPage("page5", page5Content);
+                }
+                
+               
+                
+                    // Find the content of page1
+
+                
+
+                
+
+            // If only page1 exists, hide navigation
+            let navButtons = buttons.length > 1 ? `<div class="nav-buttons">${buttons.join("")}</div>` : "";
+
             return `
                 <div class="popup-container">
-                    <div class="page-content">
-                        <div id="page1" class="page active">${page1Content}</div>
-                        <div id="page2" class="page">${page2Content}</div>
-                        <div id="page3" class="page">${page3Content}</div>
-                    </div>
-                    <div class="nav-buttons">
-                        <button data-page="page1">1</button>
-                        <button data-page="page2">2</button>
-                        <button data-page="page3">3</button>
-                    </div>
+                    <div class="page-content">${pages.join("")}</div>
+                    ${navButtons}
                 </div>
             `;
         }
-        
-        
-        
-
-        
         
         function createLegend() {
             const legend = L.control({ position: 'bottomright' });
@@ -869,6 +1793,8 @@
             // Set the clicked layer to blue
             layersAtPoint[index].setStyle({ color: 'blue' });
         }
+
+       
 
 
         document.getElementById('geojsonInput1').addEventListener('change', function() {
