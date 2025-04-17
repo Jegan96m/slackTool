@@ -807,7 +807,7 @@ select {
                             onEachFeature: function(feature, layer) {
                                 // Add a permanent label displaying the fondid below the line
                                 if (feature.properties.FondID) {
-                                    layer.bindTooltip(`ID: ${feature.properties.ID}, FondID: ${feature.properties.FondID}`, {
+                                    layer.bindTooltip(`ID: ${feature.properties.ID}`, {
                                         permanent: false,
                                         direction: 'bottom',
                                         offset: [5, 10],  // Adjust offset to ensure visibility below the line
@@ -862,21 +862,21 @@ select {
                                             //distributionCount++;
                                             popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
                                                                 <span style="display: inline-block; width: 20px; height: 7px; background-color: orange; margin-right: 5px;"></span>
-                                                                ${ID} - ${FondID}
+                                                                ${ID}
                                                                 
                                                             </div>`;
                                         } else if (Layer === 'Fiber (Lateral)') {
                                             //lateralCount++;
                                             popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
                                                                 <span style="display: inline-block; width: 20px; height: 7px; background-color: red; margin-right: 5px;"></span>
-                                                                ${ID} - ${FondID}
+                                                                ${ID}
                                                                 
                                                             </div>`;
                                         } else {
                                             //dropCount++;
                                             popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
                                                                 <span style="display: inline-block; width: 20px; height: 5px; background-color: purple; margin-right: 5px;"></span>
-                                                                ${ID} - ${FondID}
+                                                                ${ID}
                                                                 
                                                             </div>`;
                                         }
@@ -897,7 +897,6 @@ select {
                                             const selectedProps = selectedLayer.feature.properties;
                                             const selectedContent = `
                                                 <strong>ID:</strong> ${selectedProps.ID}<br>
-                                                <strong>FondID:</strong> ${selectedProps.FondID}<br>
                                                 <strong>Layer:</strong> ${selectedProps.Layer}
                                             `;
                                             layer.setPopupContent(selectedContent);
@@ -911,7 +910,6 @@ select {
                             layer.bindPopup(`
                                 <div>
                                     <strong>ID:</strong> ${feature.properties.ID}<br>
-                                    <strong>FondID:</strong> ${feature.properties.FondID}<br>
                                     <strong>Layer:</strong> ${feature.properties.Layer}
                                 </div>
                             `);
