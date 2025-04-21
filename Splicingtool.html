@@ -1485,10 +1485,6 @@ select {
                 return result;
             }
             
-            
-            
-            
-
             let outputCablesRaw = processData(connections);
 
             if (conn && conn.length > 0) {
@@ -1497,7 +1493,12 @@ select {
                     outputCablesRaw += `<br>${additionalData}`;
                 }
             }
-
+            if (connn && connn.length > 0) {
+                const moreData = processData(connn);
+                if (moreData) {
+                    outputCablesRaw += `<br>${moreData}`;
+                }
+            }
             let formattedOutputCables = formatOutputCables(outputCablesRaw);
 
             // Create content for page 6 with a container for both incoming and outgoing cables
