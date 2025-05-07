@@ -951,6 +951,7 @@ select {
                                 };
 
                                 const equipmentType = feature.properties.Equipment;
+                                const spec = feature.properties.Spec
                                 if (equipmentType === 'PS') {
                                     markerOptions.fillColor = "#39ff14";
                                     markerOptions.color = "#39ff14";
@@ -959,10 +960,9 @@ select {
                                     markerOptions.fillColor = "#ff073a";
                                     markerOptions.color = "#ff073a";
                                     markerOptions.className = "neon-marker-red"
-                                } else if (equipmentType === 'None') {
-                                    markerOptions.fillColor = "white";
-                                    markerOptions.fillOpacity = "0.1";
-                                    markerOptions.color = "yellow";
+                                } else if (equipmentType === 'None' && spec) {
+                                    markerOptions.fillColor = "cyan";
+                                    markerOptions.color = "red";
                                     markerOptions.opacity = "0.5";
                                 } else if (equipmentType === 'Splice') {
                                     markerOptions.fillColor = "#0CAFFF";
@@ -972,6 +972,12 @@ select {
                                     markerOptions.fillColor = "#EE82EE";
                                     markerOptions.color = "#FF00FF";
                                     markerOptions.className = "neon-marker-purple"
+                                    
+                                }else if (equipmentType === 'None' ) {
+                                    markerOptions.fillColor = "white";
+                                    markerOptions.fillOpacity = "0.1";
+                                    markerOptions.color = "yellow";
+                                    markerOptions.opacity = "0.5";
                                 }
 
                                 let marker = L.circleMarker(latlng, markerOptions);
@@ -1282,7 +1288,11 @@ select {
             const hubb = firstGeoJsonProperties.hubb || "";
             const conn = firstGeoJsonProperties.conn || "";
             const hubbb = firstGeoJsonProperties.hubbb || "";
-            const connn = firstGeoJsonProperties.connn || "";           
+            const connn = firstGeoJsonProperties.connn || "";      
+            const hubbbb = firstGeoJsonProperties.hubbbb || "";
+            const connnn = firstGeoJsonProperties.connnn || "";    
+            const hubbbbb = firstGeoJsonProperties.hubbbbb || "";
+            const connnnn = firstGeoJsonProperties.connnnn || "";     
         
             function processData(data) {
                 let separator = data.includes(', ') ? ', ' : '\n';
@@ -1358,6 +1368,7 @@ select {
                 }
             }
 
+            
             // Create page6Content and append page1 content
             function formatOutputCables(data) {
                 if (!data) return "No output cables found.";
@@ -1485,6 +1496,7 @@ select {
                 return result;
             }
             
+
             let outputCablesRaw = processData(connections);
 
             if (conn && conn.length > 0) {
@@ -1493,14 +1505,27 @@ select {
                     outputCablesRaw += `<br>${additionalData}`;
                 }
             }
+
             if (connn && connn.length > 0) {
                 const moreData = processData(connn);
                 if (moreData) {
                     outputCablesRaw += `<br>${moreData}`;
                 }
             }
+            if (connnn && connnn.length > 0) {
+                const moreData = processData(connnn);
+                if (moreData) {
+                    outputCablesRaw += `<br>${moreData}`;
+                }
+            }
+            if (connnnn && connnnn.length > 0) {
+                const moreData = processData(connnnn);
+                if (moreData) {
+                    outputCablesRaw += `<br>${moreData}`;
+                }
+            }
             let formattedOutputCables = formatOutputCables(outputCablesRaw);
-
+        
             // Create content for page 6 with a container for both incoming and outgoing cables
             let page6Content = `
             <div class="page-header">${Handhole}</div>
@@ -1513,6 +1538,7 @@ select {
                         
                         <div class="outgoing-cables" style="width: 80%;">
                             <p style="margin-top: -5px;"><strong>Fiber Connections:</strong><br>${getAlignedFiberPairs(formattedOutputCables)}</p>
+                            
 
                         </div>
                     </div>
@@ -1640,11 +1666,29 @@ select {
                         if (!inputSSCables || inputSSCables.length === 0) {
                             inputSSCables = processInputSSCablesData(conn);
                         }
+                        if (!inputSSCables || inputSSCables.length === 0) {
+                            inputSSCables = processInputSSCablesData(connn);
+                        }
+                        if (!inputSSCables || inputSSCables.length === 0) {
+                            inputSSCables = processInputSSCablesData(connnn);
+                        }
+                        if (!inputSSCables || inputSSCables.length === 0) {
+                            inputSSCables = processInputSSCablesData(connnnn);
+                        }
 
                      // Add more if needed
                     let outputSSCables = processOutputSSCablesData(connections);
                     if (!outputSSCables || outputSSCables.length === 0) {
                         outputSSCables = processOutputSSCablesData(conn);
+                    }
+                    if (!outputSSCables || outputSSCables.length === 0) {
+                        outputSSCables = processOutputSSCablesData(connn);
+                    }
+                    if (!outputSSCables || outputSSCables.length === 0) {
+                        outputSSCables = processOutputSSCablesData(connnn);
+                    }
+                    if (!outputSSCables || outputSSCables.length === 0) {
+                        outputSSCables = processOutputSSCablesData(connnnn);
                     }
                 
                     if (!isNaN(secondaryCount) && secondaryCount > 0) {
@@ -1694,10 +1738,8 @@ select {
                 
                
                 
-                    // Find the content of page1
-
+                 
                 
-
                 
 
             // If only page1 exists, hide navigation
