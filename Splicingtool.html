@@ -571,7 +571,8 @@
             background: #333;
         }
 
- @keyframes pulse {
+       
+   @keyframes pulse {
     0% {
       text-shadow: 0 0 4px #ffd900, 0 0 8px #ffd900, 0 0 12px #ffd900;
     }
@@ -606,6 +607,7 @@
     animation: pulseb 1s infinite;
   }
 
+  
 /*for fiber display*/
 .container-fiber {
     display: flex;
@@ -890,21 +892,21 @@ select {
                                     //let dropCount = 0;
                                     
                                     layersAtPoint.forEach((layer,index) => {
-                                        const { ID,FondID, Layer } = layer.feature.properties;
+                                        const { ID,FondID, Layer,["Material Length"]: materialLength } = layer.feature.properties;
 
                                         // Increment counters based on FondID
                                         if (Layer === 'Fiber (Distribution)') {
                                             //distributionCount++;
                                             popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
                                                                 <span style="display: inline-block; width: 20px; height: 7px; background-color: orange; margin-right: 5px;"></span>
-                                                                ${ID} 
+                                                                ${ID} - (,${materialLength},${FondID})
                                                                 
                                                             </div>`;
                                         } else if (Layer === 'Fiber (Lateral)') {
                                             //lateralCount++;
                                             popupContent += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
                                                                 <span style="display: inline-block; width: 20px; height: 7px; background-color: red; margin-right: 5px;"></span>
-                                                                ${ID} 
+                                                                ${ID}, ${FondID} 
                                                                 
                                                             </div>`;
                                         } else {
@@ -943,11 +945,12 @@ select {
                                 }
                             });
 
+                            
                             layer.bindPopup(`
                                 <div>
-                                    <strong>ID:</strong> ${feature.properties.ID}<br>
+                                     ${feature.properties}
                                     
-                                    <strong>Layer:</strong> ${feature.properties.Layer}
+                                    
                                 </div>
                             `);
                         }
@@ -1476,7 +1479,8 @@ select {
                                 left: leftFiber,
                                 right: rightFiber,
                                 showArrow: true,
-                                rightCable: rightCable // track for label use
+                                rightCable: rightCable, // track for label use
+                                type: type
                             });
                         } else {
                             groupMap[leftKey].allPairs.push({
@@ -1720,7 +1724,7 @@ select {
                         }
 
                      // Add more if needed
-                    let outputSSCables = processOutputSSCablesData(connections);
+                     let outputSSCables = processOutputSSCablesData(connections);
                     if (!outputSSCables || outputSSCables.length === 0) {
                         outputSSCables = processOutputSSCablesData(conn);
                     }
@@ -1781,7 +1785,15 @@ select {
                 
                
                 
-                 
+                 // Find the content of page1
+                let page7Content = `
+                <div class="page-header">${Handhole}</div>
+                <div class="page-body">
+                <p><strong>Fiber Connections:</strong><br>${formattedOutputCables}</p>
+                </div>`;
+                if (page7Content) {
+                addPage("page7", page7Content);
+              }
                 
                 
 
@@ -1802,7 +1814,7 @@ select {
             legend.onAdd = function() {
                 const div = L.DomUtil.create('div', 'legend');
                 div.innerHTML = `
-                   <strong><span style="font-size: 30px;">Legend</strong><p>
+                    <strong><span style="font-size: 30px;">Legend</strong><p>
                     <strong><span style="font-size: 15px;">Splicing info</strong><p>
                     <span class="pulse-red" style="font-size: 24px;">➔</span> Passthrough<p>
                     <span class="pulseb-blue" style="font-size: 24px;">➔</span> Splice <p>
