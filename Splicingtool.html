@@ -1483,8 +1483,14 @@ select {
                         result += `
                         <div style="display: flex; align-items: center;">
                             <div style="width: 20%; text-align: center;">${pair.left}</div>
-                            <div style="width: 5%; text-align: center; color: Blue; font-weight: bold; transform: scaleX(2);">
-                                ${pair.showArrow ? "→" : ""}
+                            <div style="width: 5%; text-align: center; font-weight: bold; transform: scaleX(2);">
+                               ${
+                              pair.showArrow
+                                ? pair.type === "express"
+                                  ? `<span style="color: #39FF14; text-shadow: 0 0 10px #39FF14;">➔</span>`
+                                  : `<span style="color: blue;">➔</span>`
+                                : ""
+                            }
                             </div>
                             <div style="width: 20%; text-align: center;">${rightDisplay}</div>
                         </div>`;
