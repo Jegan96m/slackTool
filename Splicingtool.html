@@ -571,6 +571,41 @@
             background: #333;
         }
 
+ @keyframes pulse {
+    0% {
+      text-shadow: 0 0 4px #ffd900, 0 0 8px #ffd900, 0 0 12px #ffd900;
+    }
+    50% {
+      text-shadow: 0 0 8px  #fe0000, 0 0 16px #fe0000, 0 0 24px #fe0000;
+    }
+    100% {
+      text-shadow: 0 0 4px #ffd900, 0 0 8px #ffd900, 0 0 12px #ffd900;
+    }
+  }
+
+  .pulse-red {
+    color: #fe0000;
+    font-family: monospace;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulseb {
+    0% {
+      text-shadow: 0 0 4px #ffd900, 0 0 8px #ffd900, 0 0 12px #ffd900;
+    }
+    50% {
+      text-shadow: 0 0 8px #001eff, 0 0 16px #001eff, 0 0 24px #001eff;
+    }
+    100% {
+      text-shadow: 0 0 4px #ffd900, 0 0 8px #ffd900, 0 0 12px #ffd900;
+    }
+  }
+
+  .pulse-blue {
+    color: #001eff;
+    font-family: monospace;
+    animation: pulseb 1s infinite;
+  }
+
 /*for fiber display*/
 .container-fiber {
     display: flex;
@@ -1483,14 +1518,16 @@ select {
                         result += `
                         <div style="display: flex; align-items: center;">
                             <div style="width: 20%; text-align: center;">${pair.left}</div>
-                            <div style="width: 5%; text-align: center; font-weight: bold; transform: scaleX(2);">
-                               ${
-                              pair.showArrow
-                                ? pair.type === "express"
-                                  ? `<span style="color: #39FF14; text-shadow: 0 0 10px #39FF14;">➔</span>`
-                                  : `<span style="color: blue;">➔</span>`
-                                : ""
-                            }
+                            <div style="width: 5%; text-align: center; font-weight: bold;">
+                                ${
+                                pair.showArrow
+                                    ? (
+                                        pair.type === "express"
+                                        ? `<span class="pulse-red">➔</span>`
+                                        : `<span class="pulse-blue">➔</span>`
+                                    )
+                                    : ""
+                                }
                             </div>
                             <div style="width: 20%; text-align: center;">${rightDisplay}</div>
                         </div>`;
@@ -1765,7 +1802,11 @@ select {
             legend.onAdd = function() {
                 const div = L.DomUtil.create('div', 'legend');
                 div.innerHTML = `
-                    <strong><span style="font-size: 20px;">Legend</strong><p>
+                   <strong><span style="font-size: 30px;">Legend</strong><p>
+                    <strong><span style="font-size: 15px;">Splicing info</strong><p>
+                    <span class="pulse-red" style="font-size: 24px;">➔</span> Passthrough<p>
+                    <span class="pulse-blue" style="font-size: 24px;">➔</span> Splice <p>
+                    <strong><span style="font-size: 15px;">Handhole types</strong><p>
                     <i class="color-box" style="background:rgba(0, 255, 0, 0.5); box-shadow:2px 0 10px rgb(0, 255, 0, 1)"></i> PS<p>
                     <i class="color-box" style="background: #ff073a; box-shadow:2px 0 10px rgb(255, 7, 58, 1) "></i> SS<p>
                     <i class="color-box" style="background: #0CAFFF;box-shadow:2px 0 10px rgb(12, 175, 255, 1)"></i> Splice<p>
