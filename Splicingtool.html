@@ -1217,7 +1217,7 @@ select {
             return Array.from(inputCables); // Return unique cables as an array
         }
         function findOutputPSplit(lines) {
-            let pattern = /PSsplit\s(.*?F\d+)/;
+            let pattern = /PSsplit\s(.+F\d+)/;
 
             let valuesAfterSSSplit = [];
             let groupedValues = [];
