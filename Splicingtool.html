@@ -1245,7 +1245,7 @@ select {
             return groupedValues;
         }
         function findOutputSSplit(lines) {
-            let pattern = /SSsplit\s(.*?)\sF\d+/;
+            let pattern = /SSsplit\s(.*F\d+)$/;
             let valuesAfterSSSplit = [];
             let groupedValues = [];
             let currentGroup = [];
