@@ -792,46 +792,23 @@ select {
             className: 'leaflet-google-dark'
         });
 
-        // ADD THE MAP LAYER FIRST
-lightTheme.addTo(map);
-
-// Apply initial theme and handle toggle
-const themeSwitch = document.getElementById('themeSwitch');
-
-function updateMapTheme() {
-    const container = lightTheme.getContainer();
-
-    if (!container) return;
-
-    container.classList.toggle('leaflet-google-dark', themeSwitch.checked);
-    container.classList.toggle('leaflet-google-light', !themeSwitch.checked);
-}
-
-themeSwitch.addEventListener('change', updateMapTheme);
-updateMapTheme();
-        /*var darkTheme = L.tileLayer(
+        
+        var darkTheme = L.tileLayer(
     'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     {
         attribution: '© Developed by JGN',
         subdomains: 'abcd',
         maxZoom: 99
     }
-);*/
+);
 
 
         // Add initial layer
-        //darkTheme.addTo(map);
+        darkTheme.addTo(map);
 
         // Handle switch toggle
-        document.getElementById('themeSwitch').addEventListener('change', function () {
-    lightTheme.getContainer().classList.toggle(
-        'leaflet-google-dark', this.checked
-    );
-    lightTheme.getContainer().classList.toggle(
-        'leaflet-google-light', !this.checked
-    );
-});
-        /*document.getElementById('themeSwitch').addEventListener('change', function (e) {
+        
+        document.getElementById('themeSwitch').addEventListener('change', function (e) {
             if (e.target.checked) {
                 darkTheme.addTo(map);
                 lightTheme.remove();
@@ -839,7 +816,7 @@ updateMapTheme();
                 lightTheme.addTo(map);
                 darkTheme.remove();
             }
-        });*/
+        });
 
 
         let firstGeoJSONCoordinates = {};
