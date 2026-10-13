@@ -813,11 +813,11 @@ select {
         
         document.getElementById('themeSwitch').addEventListener('change', function (e) {
             if (e.target.checked) {
+                map.removeLayer(lightTheme);
                 darkTheme.addTo(map);
-                lightTheme.remove();
             } else {
+                map.removeLayer(darkTheme);
                 lightTheme.addTo(map);
-                darkTheme.remove();
             }
         });
 
