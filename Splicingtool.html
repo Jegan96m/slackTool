@@ -782,15 +782,15 @@ select {
             maxZoom: 99
         });
 
+        
         var darkTheme = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-    {
-        attribution: '© Developed by JGN',
-        maxZoom: 99,
-        maxNativeZoom: 16,
-        noWrap: true
-    }
-);
+            'https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=cb1_4ink_1_3e84a15ac469fd7bea0032dc',
+            {
+                attribution: '© Developed by JGN',
+                maxZoom: 20
+            }
+        );
+
 
         // Add initial layer
         darkTheme.addTo(map);
